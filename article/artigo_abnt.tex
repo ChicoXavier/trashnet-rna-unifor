@@ -34,7 +34,7 @@
 % CABEÇALHO NA 1ª PÁGINA (SEM CAPA SEPARADA - CONFORME SEÇÃO 6 DA PROPOSTA)
 % ==============================================================================
 \begin{center}
-    {\footnotesize\bfseries\color{PrimaryBlue} UNIVERSIDADE DE FORTALEZA (UNIFOR) --- EDUCAÇÃO A DISTÂNCIA (EAD) | REDES NEURAIS ARTIFICIAIS}\\[6pt]
+    {\footnotesize\bfseries\color{PrimaryBlue} UNIVERSIDADE DE FORTALEZA (UNIFOR) | EDUCAÇÃO A DISTÂNCIA (EAD) | REDES NEURAIS ARTIFICIAIS}\\[6pt]
     {\large\bfseries CLASSIFICAÇÃO DE RESÍDUOS SÓLIDOS POR IMAGENS COM REDES NEURAIS ARTIFICIAIS: COMPARAÇÃO ENTRE MLP, CNN, PESOS DE CLASSE, RESOLUÇÃO E TRANSFERÊNCIA DE APRENDIZAGEM COM YOLO}\\[8pt]
     {\small
     \textbf{Equipe:} Caio Cesar da Silva Barros (Matrícula: [XXXXXXX]); Danillo Castro de Sousa (Matrícula: 2523562);\\
@@ -46,7 +46,7 @@
 \hrule
 \vspace{6pt}
 
-\noindent\textbf{RESUMO:} A triagem automatizada de resíduos sólidos recicláveis é um desafio prático de visão computacional devido à variabilidade visual dos materiais e ao desequilíbrio entre categorias. Este trabalho apresenta um estudo experimental controlado com o conjunto de dados \textit{TrashNet}, após a remoção de 6 amostras pertencentes a 3 pares duplicados via MD5 com rótulos conflitantes, resultando em 2.521 imagens limpas em seis classes (\textit{glass}, \textit{paper}, \textit{cardboard}, \textit{plastic}, \textit{metal} e \textit{trash}), com divisão estratificada fixa (70\% treino, 15\% validação e 15\% teste; semente 42). Foram executados seis experimentos obrigatórios comparando \textit{Multilayer Perceptron} (MLP) e Rede Neural Convolucional (CNN) com e sem pesos de classe em $128 \times 96$ pixels, além da avaliação do efeito da resolução na CNN ($128 \times 96$, $256 \times 192$ e $512 \times 384$) mantendo 28.358 parâmetros via \textit{Global Average Pooling}, sob protocolo uniforme (até 60 épocas, parada antecipada com paciência 10 e mesma aumentação de dados geométrica). Como extensão opcional, aplicou-se transferência de aprendizagem com \textit{YOLO11n-cls} ($224 \times 224$). Nos experimentos obrigatórios, a CNN em $128 \times 96$ com pesos obteve o maior F1 macro de validação (0,7277), atingindo 73,09\% de acurácia e 0,7036 de F1 macro no teste, além de elevar o \textit{recall} da classe minoritária \textit{trash} de 0,45 para 0,60; já a CNN sem pesos em $128 \times 96$ e $256 \times 192$ alcançou 74,67\% de acurácia no teste (F1 macro de 0,7154 e 0,7213), superando amplamente a MLP (34,83\% e 0,2275, com 9,47 milhões de parâmetros). O aumento de resolução para $512 \times 384$ elevou o custo temporal por época em cerca de 22,8 vezes sem melhoria de desempenho (70,98\%). Por fim, o \textit{YOLO11n-cls} atingiu 91,03\% de acurácia e 0,8865 de F1 macro no mesmo conjunto de teste, indicando o impacto do pré-treinamento em larga escala.
+\noindent\textbf{RESUMO:} Separar resíduos recicláveis por imagem é difícil porque os objetos variam muito e algumas classes têm poucas fotos. Este trabalho compara redes neurais na classificação do conjunto \textit{TrashNet}. Antes de dividir os dados, removemos 6 fotos que faziam parte de 3 pares duplicados com rótulos conflitantes. Ficamos com 2.521 imagens limpas em seis classes (\textit{glass}, \textit{paper}, \textit{cardboard}, \textit{plastic}, \textit{metal} e \textit{trash}). Usamos divisão estratificada fixa com 70\% para treino, 15\% para validação e 15\% para teste (semente 42). Rodamos seis experimentos obrigatórios comparando MLP e CNN com e sem pesos de classe em $128 \times 96$, além de testar a CNN em $256 \times 192$ e $512 \times 384$. Como extra, fizemos ajuste fino do \textit{YOLO11n-cls} ($224 \times 224$). A CNN superou muito a MLP (74,67\% contra 34,83\% de acurácia) usando menos de 0,3\% dos parâmetros. Os pesos de classe subiram o \textit{recall} de \textit{trash} na CNN de 0,45 para 0,60, mas baixaram a precisão. Aumentar a resolução para $512 \times 384$ não melhorou a acurácia (70,98\%) e deixou cada época cerca de 22,8 vezes mais lenta. O \textit{YOLO11n-cls} chegou a 91,03\% de acurácia no teste. Concluímos que a CNN funciona bem com poucos parâmetros e que a transferência de aprendizagem ajuda muito em bases pequenas.
 
 \noindent\textbf{Palavras-chave:} Redes Neurais Artificiais. Visão Computacional. TrashNet. Classificação de Resíduos. Transferência de Aprendizagem.
 
@@ -54,11 +54,11 @@
 \section{Introdução}
 % ==============================================================================
 
-O gerenciamento eficiente de resíduos sólidos urbanos depende diretamente da correta segregação dos materiais recicláveis. No entanto, a triagem manual está sujeita a erros humanos, fadiga e riscos ocupacionais. Nesse contexto, técnicas de aprendizado profundo (\textit{Deep Learning}) e Redes Neurais Artificiais (RNAs) aplicadas à visão computacional e ao reconhecimento de padrões oferecem uma alternativa promissora para identificar automaticamente materiais como vidro, papel, papelão, plástico e metal a partir de imagens digitais (BISHOP; NASRABADI, 2006; GOODFELLOW et al., 2016).
+Separar bem o lixo reciclável é essencial para o reaproveitamento de materiais. A triagem manual, porém, cansa os trabalhadores, causa erros e traz riscos à saúde. Por isso, usar Redes Neurais Artificiais (RNAs) e aprendizado profundo (\textit{Deep Learning}) em visão computacional ajuda a reconhecer vidro, papel, papelão, plástico e metal direto de fotos (BISHOP; NASRABADI, 2006; GOODFELLOW et al., 2016).
 
-Conforme os fundamentos estudados na disciplina (BARBOSA, 2025), arquiteturas do tipo \textit{Multilayer Perceptron} (MLP) empregam camadas totalmente conectadas e fluxo \textit{feedforward} com funções de ativação suaves e diferenciáveis para aprender mapeamentos não lineares por meio do algoritmo de retropropagação do erro (\textit{backpropagation}), superando as limitações de separabilidade linear do Perceptron Simples e do ADALINE (RUMELHART; HINTON; WILLIAMS, 1986; HAYKIN, 2001; SILVA; SPATTI; FLAUZINO, 2010). Contudo, ao vetorizar imagens RGB diretamente na entrada, a MLP perde a relação geométrica de vizinhança espacial e sofre crescimento excessivo de parâmetros na primeira camada. Em contrapartida, no paradigma de \textit{Deep Learning}, as Redes Neurais Convolucionais (CNNs) preservam a entrada matricial e realizam extração e seleção de características na 1\textsuperscript{a} região por filtros compartilhados e subamostragem (\textit{pooling}), aprendendo mapas hierárquicos de bordas, cantos e contornos antes da etapa de decisão (ZEILER; FERGUS, 2014; GOODFELLOW et al., 2016; BARBOSA, 2025).
+Na disciplina, estudamos dois tipos principais de redes (BARBOSA, 2025). A rede \textit{Multilayer Perceptron} (MLP) usa camadas densas com ativação suave e aprende pelo algoritmo de \textit{backpropagation}, que ajusta os pesos a partir do erro da saída. Com isso, ela resolve problemas não lineares que o Perceptron Simples e o ADALINE não resolvem (RUMELHART; HINTON; WILLIAMS, 1986; HAYKIN, 2001; SILVA; SPATTI; FLAUZINO, 2010). Mas a MLP transforma a imagem em uma lista longa de números, perde a posição dos pixels vizinhos e cria milhões de pesos logo na entrada. Já a Rede Neural Convolucional (CNN) lê a imagem como matriz e passa pequenos filtros compartilhados e camadas de \textit{pooling} para reduzir o mapa. Assim, ela aprende bordas, cantos e formas antes da camada final de decisão (ZEILER; FERGUS, 2014; GOODFELLOW et al., 2016; BARBOSA, 2025).
 
-O objetivo deste estudo é investigar empiricamente o desempenho, o custo de treinamento e o tempo de inferência de modelos MLP e CNN na classificação das seis classes do conjunto de dados \textit{TrashNet} (YANG; THUNG, 2016). Especificamente, avaliam-se: (i) a diferença arquitetural entre MLP e CNN em $128 \times 96$ pixels; (ii) o efeito da ponderação de classes na função de perda sobre a classe minoritária \textit{trash}; (iii) o custo-benefício do aumento de resolução espacial ($128 \times 96$, $256 \times 192$ e $512 \times 384$) na CNN; e (iv) como objetivo extra opcional, os ganhos obtidos por transferência de aprendizagem com a arquitetura \textit{YOLO11n-cls}.
+Nosso objetivo é medir o desempenho, o tempo de treino e o tempo de inferência de modelos MLP e CNN nas seis classes do \textit{TrashNet} (YANG; THUNG, 2016). Testamos quatro pontos: (i) comparar MLP e CNN em $128 \times 96$ pixels; (ii) testar pesos de classe para ajudar a classe minoritária \textit{trash}; (iii) ver se aumentar a resolução ($128 \times 96$, $256 \times 192$ e $512 \times 384$) compensa na CNN; e (iv) testar transferência de aprendizagem (\textit{transfer learning}, aproveitando pesos já treinados em outra base) com o \textit{YOLO11n-cls}.
 
 % ==============================================================================
 \section{Materiais e Métodos}
@@ -66,57 +66,57 @@ O objetivo deste estudo é investigar empiricamente o desempenho, o custo de tre
 
 \subsection{Conjunto de Dados e Análise Exploratória}
 
-Utilizou-se como base o arquivo oficial \texttt{dataset-resized.zip} do \textit{TrashNet}, composto originalmente por 2.527 imagens coloridas no formato RGB com dimensão padrão de $512 \times 384$ pixels (largura $\times$ altura). A inspeção automatizada de integridade confirmou zero arquivos corrompidos e 100\% das amostras no modo RGB. Entretanto, a verificação por assinatura criptográfica (MD5) revelou três pares de arquivos idênticos rotulados em categorias distintas: \texttt{plastic152.jpg}/\texttt{glass176.jpg}, \texttt{plastic332.jpg}/\texttt{glass389.jpg} e \texttt{metal91.jpg}/\texttt{glass115.jpg}. Para evitar contaminação e ruído de avaliação entre subconjuntos, todos os 6 arquivos pertencentes a esses pares conflitantes foram removidos \textbf{antes} da divisão dos dados, resultando em um conjunto limpo de \textbf{2.521 imagens} distribuídas em seis classes: \textit{glass} (498), \textit{paper} (594), \textit{cardboard} (403), \textit{plastic} (480), \textit{metal} (409) e \textit{trash} (137).
+Usamos o arquivo oficial \texttt{dataset-resized.zip} do \textit{TrashNet}, que tem 2.527 fotos coloridas RGB de $512 \times 384$ pixels (largura $\times$ altura). Conferimos todos os arquivos por script e não achamos nenhuma imagem corrompida, sendo 100\% em RGB. Mas o cálculo de hash MD5 achou três pares de fotos idênticas com rótulos diferentes: \texttt{plastic152.jpg}/\texttt{glass176.jpg}, \texttt{plastic332.jpg}/\texttt{glass389.jpg} e \texttt{metal91.jpg}/\texttt{glass115.jpg}. Para evitar ruído e vazamento entre os conjuntos, removemos esses 6 arquivos \textbf{antes} de dividir a base. Sobraram \textbf{2.521 imagens} limpas em seis classes: \textit{glass} (498), \textit{paper} (594), \textit{cardboard} (403), \textit{plastic} (480), \textit{metal} (409) e \textit{trash} (137).
 
-Visualmente, as fotografias do \textit{TrashNet} foram capturadas em ambiente controlado sobre fundo claro uniforme, com iluminação variável e objetos individuais frequentemente amassados, translúcidos (vidro e plástico) ou com reflexos metálicos (metal e vidro), o que dificulta a discriminação apenas por cor global. A Figura~\ref{fig:dist} exibe a distribuição estratificada após a limpeza e a Figura~\ref{fig:exemplos} apresenta exemplos representativos das seis classes.
+As fotos do \textit{TrashNet} foram tiradas em fundo claro uniforme e mostram um objeto por vez. Muitos objetos estão amassados, são transparentes (vidro e plástico) ou refletem luz (metal e vidro), o que dificulta separar as classes só pela cor. A Figura~\ref{fig:dist} mostra a divisão das classes após a limpeza, e a Figura~\ref{fig:exemplos} traz exemplos de cada categoria.
 
 \begin{figure}[H]
     \centering
-    \caption{Distribuição estratificada das seis classes do TrashNet limpo (2.521 imagens; 70\% treino, 15\% validação, 15\% teste).}
+    \caption{Quantidade de imagens por classe no TrashNet limpo (2.521 imagens; 70\% treino, 15\% validação, 15\% teste).}
     \label{fig:dist}
     \includegraphics[width=0.88\linewidth]{fig1_distribuicao_classes.png}\\
-    {\footnotesize Fonte: Elaborada pelos autores (2026).}
+    {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \caption{Exemplos representativos das seis classes no conjunto de treinamento.}
+    \caption{Exemplos de imagens das seis classes no conjunto de treino.}
     \label{fig:exemplos}
     \includegraphics[width=0.95\linewidth]{fig2_exemplos_classes.png}\\
-    {\footnotesize Fonte: Elaborada pelos autores a partir de Yang e Thung (2016).}
+    {\footnotesize Fonte: Autores, com imagens de Yang e Thung (2016).}
 \end{figure}
 
 \subsection{Divisão Estratificada, Pré-processamento e Prevenção de Vazamento}
 
-Para garantir reprodutibilidade e impedir vazamento de dados (\textit{data leakage}), aplicou-se divisão estratificada fixa com semente \texttt{42} sobre as 2.521 imagens limpas: 1.764 imagens (70\%) para treinamento, 378 (15\%) para validação e 379 (15\%) para teste, mantendo em todos os subconjuntos a proporção original de ${\sim}5{,}43\%$ da classe \textit{trash} (96, 21 e 20 imagens, respectivamente). As imagens foram convertidas para RGB, redimensionadas por interpolação bilinear a partir da referência $512 \times 384$ para $128 \times 96$ e $256 \times 192$ (Figura~\ref{fig:res}) e normalizadas para o intervalo $[0, 1]$ mediante divisão por 255. Para referência estatística exclusiva do treinamento, registraram-se médias RGB de $[0{,}6727;\; 0{,}6397;\; 0{,}6047]$ e desvios padrão de $[0{,}1837;\; 0{,}1828;\; 0{,}1934]$. Para manter comparação justa entre arquiteturas, aplicou-se exatamente a mesma aumentação de dados geométrica leve (espelhamento horizontal com $p = 0{,}5$ e rotação aleatória de $\pm 10^\circ$ com $p = 0{,}5$) tanto para a MLP quanto para as CNNs, exclusivamente durante o treinamento.
+Para manter os testes reprodutíveis e evitar vazamento de dados (\textit{data leakage}), fizemos uma divisão estratificada fixa com semente \texttt{42} nas 2.521 imagens. Ficamos com 1.764 imagens (70\%) para treino, 378 (15\%) para validação e 379 (15\%) para teste. A classe \textit{trash} manteve cerca de ${\sim}5{,}43\%$ em todas as partes (96 no treino, 21 na validação e 20 no teste). Convertemos as imagens para RGB e redimensionamos de $512 \times 384$ para $128 \times 96$ e $256 \times 192$ por interpolação bilinear (Figura~\ref{fig:res}). Depois, dividimos os pixels por 255 para deixar os valores no intervalo $[0, 1]$. No treino, a média RGB foi $[0{,}6727;\; 0{,}6397;\; 0{,}6047]$ e o desvio padrão foi $[0{,}1837;\; 0{,}1828;\; 0{,}1934]$. Para comparar MLP e CNN de forma justa, aplicamos a mesma aumentação de dados leve só no treino: espelhamento horizontal ($p = 0{,}5$) e rotação aleatória de $\pm 10^\circ$ ($p = 0{,}5$).
 
 \begin{figure}[H]
     \centering
-    \caption{Comparação visual da amostra \texttt{metal107.jpg} nas três resoluções experimentais ($\text{L} \times \text{A}$).}
+    \caption{Amostra \texttt{metal107.jpg} nas três resoluções testadas ($\text{L} \times \text{A}$).}
     \label{fig:res}
     \includegraphics[width=0.92\linewidth]{fig3_comparacao_resolucoes.png}\\
-    {\footnotesize Fonte: Elaborada pelos autores (2026).}
+    {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
 \subsection{Arquitetura, Topologia e Protocolo dos Experimentos Controlados}
 
-Distinguindo \textit{arquitetura} (fluxo macroscópico do sinal) de \textit{topologia} (hiperparâmetros internos definidos pelo projetista), todos os modelos obrigatórios foram implementados em PyTorch (PASZKE et al., 2019) e treinados do zero em modo \textit{offline} por mini-lotes (\textit{batch size} = 32) com semente fixa (\texttt{42}), limite uniforme de \textbf{60 épocas}, otimizador \textbf{Adam} (taxa de aprendizagem inicial $lr = 10^{-3}$, decaimento de pesos $10^{-4}$, escalonador \textit{ReduceLROnPlateau} com fator 0,5 e paciência 3), função de perda Entropia Cruzada (\textit{CrossEntropyLoss}) e ativação \textbf{ReLU} ($g(u) = \max(0, u)$) nas camadas intermediárias --- escolhida para evitar operações exponenciais e reduzir a saturação das sigmoidais. Adotou-se \textbf{Parada Antecipada (\textit{Early Stopping})} uniforme com \textbf{paciência de 10 épocas} nos seis experimentos obrigatórios, monitorando o \textbf{F1 macro de validação} e restaurando os pesos da melhor época antes da avaliação única no conjunto de teste (BARBOSA, 2025).
+Separamos \textit{arquitetura} (o caminho geral do sinal na rede) de \textit{topologia} (escolhas de projeto, como número de camadas e de neurônios). Implementamos os seis modelos obrigatórios em PyTorch (PASZKE et al., 2019) e treinamos todos do zero. Usamos mini-lotes de 32 imagens, semente fixa (\texttt{42}) e limite de \textbf{60 épocas} (cada época é uma passagem completa pelo treino). O otimizador foi o \textbf{Adam} com taxa inicial $lr = 10^{-3}$ e decaimento de pesos $10^{-4}$. Também usamos \textit{ReduceLROnPlateau} (fator 0,5 e paciência 3) e perda Entropia Cruzada (\textit{CrossEntropyLoss}). Nas camadas ocultas, usamos \textbf{ReLU} ($g(u) = \max(0, u)$) porque ela evita contas exponenciais e satura menos que funções sigmoidais. Adotamos \textbf{Parada Antecipada (\textit{Early Stopping})} com \textbf{paciência de 10 épocas} para interromper o treino quando o \textbf{F1 macro de validação} (média simples do F1 entre as seis classes) para de melhorar. No fim, restauramos os melhores pesos para testar uma única vez (BARBOSA, 2025).
 
 \begin{itemize}
-    \item \textbf{MLP ($128 \times 96$):} Vetorização da imagem RGB ($96 \times 128 \times 3 = 36.864$ entradas), duas camadas ocultas densas (256 e 128 neurônios) com ReLU, \textit{Dropout} (taxa 0,20, desativando 20\% dos neurônios no treino para distribuir o conhecimento) e camada de saída com 6 neurônios (9.471.110 parâmetros).
-    \item \textbf{CNN ($128 \times 96$, $256 \times 192$ e $512 \times 384$):} Estruturada em duas regiões funcionais: (1) \textit{Extração e Seleção de Características} --- três blocos sequenciais de Convolução 2D (16, 32 e 64 filtros $3\times 3$ com \textit{padding} 1 e \textit{stride} 2 no primeiro bloco), \textit{BatchNorm2d}, ReLU e \textit{MaxPooling2D} ($2\times 2$), culminando em \textit{Global Average Pooling} (\texttt{AdaptiveAvgPool2d(1)}); e (2) \textit{Decisão} --- vetorização (\texttt{Flatten}) seguida de MLP densa (64 neurônios ReLU + \textit{Dropout} 0,20 + 6 saídas), mantendo exatamente \textbf{28.358 parâmetros} nas três resoluções.
-    \item \textbf{Pesos de Classe:} Nos Experimentos 2 (MLP) e 4 (CNN), utilizaram-se pesos inversamente proporcionais à frequência calculados apenas no treino: $w_c = N_{\text{treino}} / (6 \cdot N_{\text{treino},c})$ (BISHOP; NASRABADI, 2006), resultando em \textit{glass} = 0,8448; \textit{paper} = 0,7067; \textit{cardboard} = 1,0426; \textit{plastic} = 0,8750; \textit{metal} = 1,0280; e \textit{trash} = 3,0625.
+    \item \textbf{MLP ($128 \times 96$):} Achatamos a imagem RGB em um vetor de $96 \times 128 \times 3 = 36.864$ entradas. Depois, colocamos duas camadas densas (256 e 128 neurônios) com ReLU e \textit{Dropout} de 0,20 (que desliga 20\% dos neurônios no treino). A saída tem 6 neurônios, somando 9.471.110 parâmetros.
+    \item \textbf{CNN ($128 \times 96$, $256 \times 192$ e $512 \times 384$):} Dividimos a rede em duas partes. A primeira extrai padrões com três blocos de Convolução 2D (16, 32 e 64 filtros $3\times 3$, \textit{padding} 1 e \textit{stride} 2 no primeiro bloco), \textit{BatchNorm2d}, ReLU e \textit{MaxPooling2D} ($2\times 2$). No fim dela, usamos \textit{Global Average Pooling} (\texttt{AdaptiveAvgPool2d(1)}), que resume cada mapa em uma média. A segunda parte achata o vetor (\texttt{Flatten}) e passa por uma MLP (64 neurônios ReLU, \textit{Dropout} 0,20 e 6 saídas). Assim, a CNN mantém exatamente \textbf{28.358 parâmetros} nas três resoluções.
+    \item \textbf{Pesos de Classe:} Nos Experimentos 2 (MLP) e 4 (CNN), damos mais peso às classes raras na função de perda. Calculamos cada peso só no treino por $w_c = N_{\text{treino}} / (6 \cdot N_{\text{treino},c})$ (BISHOP; NASRABADI, 2006). Os valores foram: \textit{glass} = 0,8448; \textit{paper} = 0,7067; \textit{cardboard} = 1,0426; \textit{plastic} = 0,8750; \textit{metal} = 1,0280; e \textit{trash} = 3,0625.
 \end{itemize}
 
-\textbf{Objetivo Extra (YOLO11n-cls):} Aplicou-se transferência de aprendizagem com o modelo \texttt{yolo11n-cls.pt} (Ultralytics 8.4.216, pré-treinado no ImageNet-1K, 1.538.790 parâmetros) no modo \textit{classify} (JOCHER; CHAURASIA; QIU, 2024), preservando exatamente os mesmos diretórios de treino, validação e teste da semente 42 sobre as 2.521 imagens limpas. O ajuste fino ocorreu em $224 \times 224$ pixels por 20 épocas com otimizador AdamW ($lr_0 = 0{,}001$, lote 32) e aumentação padrão do \textit{YOLO classify} apenas no treino.
+\textbf{Objetivo Extra (YOLO11n-cls):} Fizemos transferência de aprendizagem com o modelo \texttt{yolo11n-cls.pt} (Ultralytics 8.4.216, pré-treinado no ImageNet-1K, 1.538.790 parâmetros) no modo \textit{classify} (JOCHER; CHAURASIA; QIU, 2024). Mantivemos exatamente a mesma divisão das 2.521 imagens (semente 42). O ajuste fino rodou em $224 \times 224$ pixels por 20 épocas, com otimizador AdamW ($lr_0 = 0{,}001$, lote 32) e aumentação padrão do \textit{YOLO classify} só no treino.
 
-\textbf{Hardware e Medição de Custo:} Os experimentos foram disparados remotamente a partir da estação Linux local e executados em CPU \texttt{Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz} (16,0~GB de RAM, sistema operacional \texttt{Darwin 20.6.0} / macOS, Python 3.11.18 e PyTorch 2.2.2), sem GPU CUDA disponível. Registrou-se o pico de memória RAM (RSS) via biblioteca \texttt{psutil}, cronometrou-se exclusivamente o laço de treinamento e validação por época via \texttt{time.perf\_counter()} (excluindo download, leitura de disco e redimensionamento prévio) e mediu-se o tempo médio de inferência por imagem (ms/img) sobre todas as 379 amostras do teste na mesma CPU.
+\textbf{Hardware e Medição de Custo:} Disparamos os treinos remotamente do Linux local para uma CPU \texttt{Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz} com 16,0~GB de RAM (\texttt{Darwin 20.6.0} / macOS, Python 3.11.18 e PyTorch 2.2.2), sem GPU CUDA. Medimos o pico de RAM (RSS) com a biblioteca \texttt{psutil}. Cronometramos só o laço de treino e validação por época usando \texttt{time.perf\_counter()}, fora download e leitura de disco. Também medimos o tempo médio de inferência por imagem (ms/img) nas 379 fotos de teste na mesma CPU.
 
 % ==============================================================================
 \section{Resultados}
 % ==============================================================================
 
-A Tabela~\ref{tab:geral} consolida as métricas de desempenho (validação e teste), o custo de treinamento e a latência média de inferência por imagem dos seis experimentos obrigatórios e do experimento bônus com YOLO11n-cls. A Tabela~\ref{tab:classe} detalha precisão, \textit{recall}, F1 e suporte por classe no conjunto de teste limpo (379 amostras), utilizando \texttt{zero\_division=0} quando uma classe não recebe nenhuma predição.
+A Tabela~\ref{tab:geral} reúne as métricas de validação e teste, o tempo de treino, a RAM e a inferência dos seis experimentos obrigatórios e do bônus com YOLO11n-cls. A Tabela~\ref{tab:classe} mostra precisão (acertos entre as previsões da classe), \textit{recall} (taxa de itens reais encontrados), F1 e suporte nas 379 imagens de teste, usando \texttt{zero\_division=0} quando uma classe não recebe previsões.
 
 \begin{table}[H]
 \centering
@@ -137,7 +137,7 @@ Exp 6: CNN & 512$\times$384 & Não & 28.358 & 0,12 & 23/33 & 3.088,45 & 93,59 & 
 \textbf{Exp 7: YOLO11n-cls} & \textbf{224$\times$224} & \textbf{Pré-tr.} & \textbf{1.538.790} & \textbf{3,05} & \textbf{20/20} & \textbf{2.462,58} & \textbf{123,13} & \textbf{16,70} & \textbf{454,4} & \textbf{0,9233*} & \textbf{91,03\% / 0,8865} \\
 \bottomrule
 \end{tabular}\\
-{\footnotesize Fonte: Elaborada pelos autores (2026). *Para o YOLO11n-cls, registra-se a acurácia Top-1 de validação reportada pelo Ultralytics.}
+{\footnotesize Fonte: Autores (2026). *Para o YOLO11n-cls, mostramos a acurácia Top-1 de validação informada pelo Ultralytics.}
 \end{table}
 
 \begin{table}[H]
@@ -160,51 +160,51 @@ Exp 6: CNN (512$\times$384) & 0,60/0,79/0,68 & 0,67/0,91/0,77 & 0,87/0,87/0,87 &
 \textbf{Exp 7: YOLO11n-cls} & \textbf{0,95/0,95/0,95} & \textbf{0,93/0,90/0,91} & \textbf{0,98/0,93/0,96} & \textbf{0,89/0,89/0,89} & \textbf{0,89/0,94/0,91} & \textbf{0,65/0,75/0,70} \\
 \bottomrule
 \end{tabular}\\
-{\footnotesize Fonte: Elaborada pelos autores (2026). Valores abreviados (P = Precisão, R = Recall, F1 = F1-score).}
+{\footnotesize Fonte: Autores (2026). Siglas: P = Precisão, R = Recall, F1 = F1-score.}
 \end{table}
 
-As curvas de perda e acurácia por época dos seis experimentos obrigatórios são exibidas na Figura~\ref{fig:curvas}, e as matrizes de confusão no conjunto de teste constam na Figura~\ref{fig:cm}.
+A Figura~\ref{fig:curvas} mostra as curvas de perda e acurácia por época dos seis experimentos obrigatórios. A Figura~\ref{fig:cm} traz as matrizes de confusão no conjunto de teste.
 
 \begin{figure}[H]
     \centering
-    \caption{Curvas de aprendizagem (perda e acurácia de treino e validação) dos seis experimentos obrigatórios.}
+    \caption{Curvas de perda e acurácia (treino e validação) dos seis experimentos obrigatórios.}
     \label{fig:curvas}
     \includegraphics[width=0.98\linewidth, height=0.72\textheight, keepaspectratio]{fig4_curvas_aprendizagem_6exp.png}\\
-    {\footnotesize Fonte: Elaborada pelos autores (2026).}
+    {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \caption{Matrizes de confusão no conjunto de teste (contagens e porcentagens por linha).}
+    \caption{Matrizes de confusão no teste (contagens e porcentagens por linha).}
     \label{fig:cm}
     \includegraphics[width=0.98\linewidth, height=0.68\textheight, keepaspectratio]{fig5_matrizes_confusao_6exp.png}\\
-    {\footnotesize Fonte: Elaborada pelos autores (2026).}
+    {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
-A Figura~\ref{fig:res_eff} ilustra o efeito do aumento de resolução na CNN sem pesos de classe (Experimentos 3, 5 e 6), e a Figura~\ref{fig:erros} apresenta a análise dos erros do modelo obrigatório de maior F1 macro na validação (\textbf{Exp 4: CNN $128 \times 96$ com pesos}, Val F1 Macro = 0,7277; 102 erros e 277 acertos em 379 amostras). Por fim, a Figura~\ref{fig:yolo} exibe a avaliação do objetivo extra com \textbf{YOLO11n-cls} (91,03\% de acurácia, 345 acertos e 34 erros no teste).
+A Figura~\ref{fig:res_eff} mostra o efeito da resolução na CNN sem pesos (Experimentos 3, 5 e 6). A Figura~\ref{fig:erros} mostra os erros do modelo obrigatório de maior F1 macro na validação (\textbf{Exp 4: CNN $128 \times 96$ com pesos}, Val F1 Macro = 0,7277), com 102 erros e 277 acertos em 379 amostras. Já a Figura~\ref{fig:yolo} apresenta o resultado do \textbf{YOLO11n-cls} (91,03\% de acurácia, 345 acertos e 34 erros).
 
 \begin{figure}[H]
     \centering
-    \caption{Efeito da resolução na CNN sem pesos: (a) desempenho no teste e (b) custo temporal.}
+    \caption{Efeito da resolução na CNN sem pesos: (a) resultado no teste e (b) tempo de treino.}
     \label{fig:res_eff}
     \includegraphics[width=0.95\linewidth]{fig6_efeito_resolucao_cnn.png}\\
-    {\footnotesize Fonte: Elaborada pelos autores (2026).}
+    {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \caption{Análise de erros do melhor modelo obrigatório na validação (Exp 4: CNN $128 \times 96$ com pesos).}
+    \caption{Erros do melhor modelo obrigatório na validação (Exp 4: CNN $128 \times 96$ com pesos).}
     \label{fig:erros}
     \includegraphics[width=0.90\linewidth]{fig7_analise_erros_melhor_modelo.png}\\
-    {\footnotesize Fonte: Elaborada pelos autores (2026).}
+    {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \caption{Avaliação do objetivo extra com YOLO11n-cls ($224 \times 224$): perda, acurácia Top-1 e matriz de confusão no teste.}
+    \caption{Resultado do YOLO11n-cls ($224 \times 224$): perda, acurácia Top-1 e matriz de confusão no teste.}
     \label{fig:yolo}
     \includegraphics[width=0.98\linewidth]{fig8_yolo_bonus_avaliacao.png}\\
-    {\footnotesize Fonte: Elaborada pelos autores (2026).}
+    {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
 % ==============================================================================
@@ -213,29 +213,29 @@ A Figura~\ref{fig:res_eff} ilustra o efeito do aumento de resolução na CNN sem
 
 \subsection{Arquiteturas: MLP versus CNN em $128 \times 96$}
 
-A comparação controlada em $128 \times 96$ pixels, sob o mesmo limite de épocas, mesma paciência e mesma aumentação de dados, evidencia uma vantagem expressiva das CNNs sobre as MLPs na classificação visual. A MLP (Exp 1) possui 9.471.110 parâmetros (36,13~MB), pois conecta cada um dos 36.864 valores RGB da imagem achatada aos neurônios ocultos, perdendo a vizinhança espacial. Como consequência, a MLP estagnou logo no início (\textit{Early Stopping} na época 12, melhor época 2), obtendo 34,83\% de acurácia e 0,2275 de F1 macro no teste, com colapso completo ($\text{F1} = 0{,}00$ via \texttt{zero\_division=0}) em \textit{metal} e \textit{trash} e forte viés para \textit{paper} (\textit{recall} 0,97 com precisão 0,28). Em contraste, a CNN (Exp 3) utilizou apenas \textbf{28.358 parâmetros} (334 vezes menor e 0,12~MB em disco) graças ao compartilhamento de filtros convolucionais e ao \textit{Global Average Pooling}, alcançando 74,67\% de acurácia e 0,7154 de F1 macro no teste, reduzindo de forma consistente a perda até a época 42 (parando na 52) sem sobreajuste acentuado.
+Na comparação em $128 \times 96$ pixels, usamos o mesmo limite de épocas, a mesma paciência e a mesma aumentação de dados. A CNN se saiu muito melhor que a MLP. A MLP (Exp 1) tem 9.471.110 parâmetros (36,13~MB) porque liga cada um dos 36.864 valores RGB da imagem achatada aos neurônios ocultos e perde a posição dos pixels. Ela quase não aprendeu: o \textit{Early Stopping} parou na época 12 (melhor época 2), com 34,83\% de acurácia e 0,2275 de F1 macro no teste. A MLP zerou em \textit{metal} e \textit{trash} ($\text{F1} = 0{,}00$ com \texttt{zero\_division=0}) e chutou quase tudo como \textit{paper} (\textit{recall} de 0,97 e precisão de 0,28). Já a CNN (Exp 3) usou só \textbf{28.358 parâmetros} (334 vezes menor e 0,12~MB) por causa dos filtros compartilhados e do \textit{Global Average Pooling}. Ela chegou a 74,67\% de acurácia e 0,7154 de F1 macro no teste. A perda caiu até a época 42 (parando na 52) sem sinais fortes de \textit{overfitting} (quando o modelo decora o treino e vai mal na validação).
 
 \subsection{Efeito do Desequilíbrio e dos Pesos de Classe}
 
-A introdução de pesos inversamente proporcionais à frequência ($w_{\text{trash}} = 3{,}0625$ frente a $w_{\text{paper}} = 0{,}7067$) produziu efeitos distintos nas duas arquiteturas. Na MLP (Exp 2), o desbalanceamento ponderado instabilizou o treinamento logo na época 1 (parada na 11), levando a acurácia global para 25,86\% (F1 macro 0,1100), com \textit{recall} nulo para \textit{glass} e \textit{trash}. Na CNN (Exp 4), porém, a ponderação elevou o \textit{recall} de \textit{trash} de 0,45 para \textbf{0,60} (12 de 20 amostras corretas) e atingiu o maior F1 macro de validação entre os obrigatórios (\textbf{0,7277}), embora reduzindo a precisão de \textit{trash} (0,64 $\to$ 0,40) e gerando 73,09\% de acurácia e 0,7036 de F1 macro no teste frente a 74,67\% e 0,7154 do Exp 3, evidenciando o \textit{trade-off} entre sensibilidade e precisão em classes raras.
+Os pesos de classe ($w_{\text{trash}} = 3{,}0625$ contra $w_{\text{paper}} = 0{,}7067$) tiveram efeitos diferentes nas duas redes. Na MLP (Exp 2), o treino ficou instável já na época 1 e parou na época 11. A acurácia caiu para 25,86\% (F1 macro 0,1100), com \textit{recall} zero em \textit{glass} e \textit{trash}. Na CNN (Exp 4), os pesos funcionaram bem para a classe rara: o \textit{recall} de \textit{trash} subiu de 0,45 para \textbf{0,60} (12 de 20 acertos). O Exp 4 também teve o maior F1 macro de validação entre os obrigatórios (\textbf{0,7277}). Mas a precisão de \textit{trash} caiu de 0,64 para 0,40. No teste, o Exp 4 fez 73,09\% de acurácia e 0,7036 de F1 macro, contra 74,67\% e 0,7154 do Exp 3. Isso mostra a troca comum entre achar mais itens raros e gerar mais alarmes falsos.
 
 \subsection{Efeito da Resolução na CNN e Custo Computacional}
 
-Graças ao \textit{Global Average Pooling}, o número de parâmetros permaneceu idêntico (28.358) nas três resoluções. Entretanto, o tempo médio por época subiu de 4,11~s ($128 \times 96$) para 21,94~s ($256 \times 192$, ${\sim}5{,}3\times$) e 93,59~s ($512 \times 384$, ${\sim}22{,}8\times$), enquanto o pico de RAM saltou de 846,0~MB para 2.112,3~MB e 6.439,6~MB. Em desempenho no teste, $256 \times 192$ obteve exatamente a mesma acurácia de $128 \times 96$ (74,67\%) com F1 macro ligeiramente maior (0,7213 contra 0,7154, diferença modesta sem teste formal de significância), mas $512 \times 384$ caiu para 70,98\% de acurácia e 0,6582 de F1 macro (melhor época 23/33), e uma possível explicação é que os filtros $3\times 3$ fixos passam a ver uma fração menor do objeto em imagens maiores (não testamos essa hipótese). Portanto, \textbf{imagens maiores não trouxeram vantagem que justificasse o aumento de tempo e memória} nesta topologia fixa, e as medições na CPU mostram inferência leve, de 0,62~ms/imagem em $128 \times 96$ e 3,74~ms/imagem em $256 \times 192$ (18,07~ms/imagem em $512 \times 384$).
+Com o \textit{Global Average Pooling}, a CNN manteve 28.358 parâmetros nas três resoluções. Mas o custo subiu muito com imagens maiores. O tempo por época passou de 4,11~s ($128 \times 96$) para 21,94~s ($256 \times 192$, ${\sim}5{,}3\times$) e 93,59~s ($512 \times 384$, ${\sim}22{,}8\times$). O pico de RAM saltou de 846,0~MB para 2.112,3~MB e 6.439,6~MB. No teste, $256 \times 192$ empatou em acurácia com $128 \times 96$ (74,67\%) e teve F1 macro um pouco maior (0,7213 contra 0,7154, sem teste estatístico formal). Já $512 \times 384$ caiu para 70,98\% de acurácia e 0,6582 de F1 macro (melhor época 23/33). Uma possível explicação é que os filtros $3\times 3$ fixos passam a ver uma fração menor do objeto em imagens maiores (não testamos essa hipótese). Por isso, \textbf{imagens maiores não compensaram o aumento de tempo e memória} nesta arquitetura fixa. Na CPU, as medições mostram inferência rápida, de 0,62~ms/imagem em $128 \times 96$ e 3,74~ms/imagem em $256 \times 192$, subindo para 18,07~ms/imagem em $512 \times 384$.
 
 \subsection{Análise de Erros, Limitações do Dataset e Comparação com a Literatura}
 
-Na análise de erros do Exp 4 (Figura~\ref{fig:erros}), as maiores confusões ocorreram entre \textit{glass}, \textit{plastic} e \textit{metal} (por exemplo, \texttt{glass270.jpg} previsto como \textit{plastic} com 97,9\% e \texttt{metal37.jpg} como \textit{plastic} com 93,9\%) por transparência e reflexos especulares semelhantes, e entre embalagens e rótulos impressos com fundo claro (\texttt{trash91.jpg} como \textit{paper} com 95,7\%, \texttt{cardboard33.jpg} como \textit{plastic} com 89,3\%, \texttt{paper31.jpg} como \textit{plastic} com 83,2\% e \texttt{plastic364.jpg} como \textit{paper} com 82,2%). Além da remoção prévia dos três pares duplicados conflitantes, outra limitação é que não ajustamos hiperparâmetros da MLP (taxa de aprendizagem, tamanho das camadas, normalização): ela ficou perto do acaso e, por isso, a diferença para a CNN mostra o resultado desta configuração, e não o limite da MLP. Também são limitações fundo claro homogêneo e objeto único centralizado restringem o uso direto em fotografias reais sem adaptação. Comparado a Yang e Thung (2016) --- 63\% com SVM em seis classes e 22\% com CNN em cinco classes (excluindo \textit{trash}) --- e ao resultado posterior informado no repositório oficial do \textit{TrashNet} (${\sim}75\%$ com CNN, com divisão 70/13/17; THUNG; YANG, 2017), nossas CNNs em $128 \times 96$ e $256 \times 192$ (74,67\% no conjunto limpo) aproximam-se da continuação do repositório, embora os valores não sejam diretamente equiparáveis devido às diferenças de classes, remoção dos 6 arquivos duplicados, divisão fixa (70/15/15), resolução e camadas de regularização.
+Na análise de erros do Exp 4 (Figura~\ref{fig:erros}), a rede confundiu mais \textit{glass}, \textit{plastic} e \textit{metal}. Por exemplo, errou \texttt{glass270.jpg} como \textit{plastic} (97,9\%) e \texttt{metal37.jpg} como \textit{plastic} (93,9\%). Isso pode acontecer porque esses materiais são transparentes e refletem luz de forma parecida. Também houve confusão em embalagens com rótulos claros: \texttt{trash91.jpg} saiu como \textit{paper} (95,7\%), \texttt{cardboard33.jpg} como \textit{plastic} (89,3\%), \texttt{paper31.jpg} como \textit{plastic} (83,2\%) e \texttt{plastic364.jpg} como \textit{paper} (82,2\%). Além da remoção prévia dos três pares duplicados conflitantes, outra limitação é que não ajustamos hiperparâmetros da MLP (taxa de aprendizagem, tamanho das camadas, normalização). Ela ficou perto do acaso, então a diferença para a CNN mostra o resultado desta configuração, e não o limite da MLP. O dataset também tem limitações: fundo claro uniforme e um só objeto centralizado, o que dificulta o uso direto em fotos reais. Yang e Thung (2016) relataram 63\% com SVM em seis classes e 22\% com CNN em cinco classes (sem \textit{trash}). Depois, o repositório oficial do \textit{TrashNet} informou cerca de ${\sim}75\%$ com CNN na divisão 70/13/17 (THUNG; YANG, 2017). Nossas CNNs em $128 \times 96$ e $256 \times 192$ (74,67\%) ficaram perto dessa marca. Mas a comparação não é direta porque mantivemos \textit{trash}, tiramos 6 fotos duplicadas e usamos divisão 70/15/15, outra resolução e outras camadas.
 
 \subsection{Discussão do Objetivo Extra: Transferência de Aprendizagem com YOLO11n-cls}
 
-O modelo \textbf{YOLO11n-cls} (Exp 7: \textbf{91,03\% Acc}; \textbf{0,8865 F1 macro}; 0,75 de \textit{recall} em \textit{trash}; 34 erros em 379 imagens) superou em +16,36 p.p.\ as melhores CNNs obrigatórias no teste (Exp 3 e Exp 5). Esse ganho reflete os efeitos esperados de \textit{Transfer Learning} e \textit{Fine-Tuning}: a base pré-treinada no \textit{ImageNet-1K} fornece extratores visuais gerais (YOSINSKI et al., 2014), somados à arquitetura moderna C3k2 (1,54M parâmetros), resolução $224 \times 224$ e aumentação padrão do Ultralytics (JOCHER; CHAURASIA; QIU, 2024). O custo foi o tempo de ajuste fino em CPU (2.462,58~s), mantendo latência de inferência medida em 16,70~ms/imagem na mesma CPU.
+O \textbf{YOLO11n-cls} (Exp 7) atingiu \textbf{91,03\% de acurácia} e \textbf{0,8865 de F1 macro}, com 0,75 de \textit{recall} em \textit{trash} e 34 erros em 379 imagens. Ele superou em +16,36 p.p.\ as melhores CNNs obrigatórias no teste (Exp 3 e Exp 5). O YOLO já vem treinado no \textit{ImageNet-1K}, então já sabe reconhecer bordas e formas gerais, e só ajustamos a rede para as seis classes (YOSINSKI et al., 2014). Ele também tem arquitetura C3k2 (1,54M parâmetros), entrada $224 \times 224$ e aumentação padrão do Ultralytics (JOCHER; CHAURASIA; QIU, 2024). O treino em CPU levou 2.462,58~s, mas a inferência ficou em 16,70~ms/imagem na mesma CPU.
 
 % ==============================================================================
 \section{Conclusão}
 % ==============================================================================
 
-Os experimentos realizados indicaram que as CNNs alcançam desempenho muito superior ao das MLPs no \textit{TrashNet} limpo (2.521 imagens) com menos de 0,3\% dos parâmetros, que os pesos de classe elevam a sensibilidade de \textit{trash} na CNN ($0{,}45 \to 0{,}60$, ao custo de menor precisão), e que o aumento de resolução para $512 \times 384$ sem aprofundamento arquitetural não melhora a acurácia no teste (70,98\% vs.\ 74,67\%) enquanto multiplica por ${\sim}22{,}8\times$ o tempo por época. O objetivo extra com \textit{YOLO11n-cls} mostrou que a transferência de aprendizagem é uma alternativa muito efetiva para bases pequenas e desbalanceadas (91,03\% de acurácia; 0,8865 F1 macro). Como trabalhos futuros, sugerem-se avaliar CNNs mais profundas em resoluções maiores, busca sistemática de hiperparâmetros com validação cruzada e validação em cenários reais com fundos complexos.
+Nos testes com o \textit{TrashNet} limpo (2.521 imagens), as CNNs superaram muito as MLPs usando menos de 0,3\% dos parâmetros. Os pesos de classe subiram o \textit{recall} de \textit{trash} na CNN de $0{,}45$ para $0{,}60$, mas reduziram a precisão. Aumentar a resolução para $512 \times 384$ sem mudar a profundidade da rede piorou a acurácia no teste (70,98\% contra 74,67\%) e deixou cada época ${\sim}22{,}8\times$ mais lenta. O \textit{YOLO11n-cls} chegou a 91,03\% de acurácia e 0,8865 de F1 macro, mostrando que transferência de aprendizagem ajuda muito em bases pequenas e desbalanceadas. Como trabalhos futuros, sugerimos testar CNNs mais profundas em resoluções maiores, buscar melhores hiperparâmetros com validação cruzada e avaliar fotos reais com fundos variados.
 
 % ==============================================================================
 \section*{Referências}
