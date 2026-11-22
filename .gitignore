@@ -1,13 +1,16 @@
-# Ambientes virtuais e caches Python
+# Ambientes virtuais, backups e caches Python
 .venv/
+backup_antes/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .DS_Store
+__MACOSX/
 
 # Dataset bruto (baixar via README.md a partir do repositório oficial TrashNet)
 data/dataset-resized.zip
 data/dataset-resized/
+data/__MACOSX/
 data/yolo_trashnet_split42/
 
 # Arquivos temporários do Ultralytics

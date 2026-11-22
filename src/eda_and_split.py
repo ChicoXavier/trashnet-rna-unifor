@@ -88,9 +88,22 @@ def run_eda_and_split():
                 corrupted.append({"path": str(fpath), "error": str(e)})
 
     df = pd.DataFrame(records)
-    print(f"Total de imagens válidas inspecionadas: {len(df)}")
+    original_count = len(df)
+    print(f"Total de imagens válidas inspecionadas: {original_count}")
     print(f"Arquivos corrompidos: {len(corrupted)}")
-    print(f"Pares de imagens idênticas (MD5): {len(duplicates)}")
+    print(f"Pares de imagens idênticas (MD5) com rótulos distintos: {len(duplicates)}")
+
+    # B2: Remover todos os arquivos pertencentes aos pares duplicados MD5 com rótulos conflitantes
+    # antes da divisão estratificada para eliminar ruído de rotulagem e vazamento entre splits.
+    conflicting_paths = set()
+    for p1, p2 in duplicates:
+        conflicting_paths.add(p1)
+        conflicting_paths.add(p2)
+
+    removed_duplicates = sorted(conflicting_paths)
+    df = df[~df["relative_path"].isin(conflicting_paths)].reset_index(drop=True)
+    print(f"Arquivos removidos por duplicidade MD5 conflitante: {len(removed_duplicates)} -> {removed_duplicates}")
+    print(f"Total limpo de imagens utilizado na divisão estratificada: {len(df)}")
 
     # Divisão estratificada: 70% treino, 15% validação, 15% teste (seed = 42)
     # Primeiro separa 70% treino e 30% temp (val + test)
@@ -158,9 +171,11 @@ def run_eda_and_split():
         }
 
     eda_summary = {
+        "total_images_original": original_count,
+        "removed_conflicting_duplicates": removed_duplicates,
         "total_images": len(df),
         "corrupted_files": len(corrupted),
-        "duplicate_md5_pairs": duplicates,
+        "duplicate_md5_pairs_original": duplicates,
         "dimensions_summary": df.groupby(["width", "height"]).size().to_dict() if False else
             [{"width": int(w), "height": int(h), "count": int(c)} for (w, h), c in df.groupby(["width", "height"]).size().items()],
         "color_modes": df["mode"].value_counts().to_dict(),
@@ -219,7 +234,10 @@ def generate_eda_figures(df: pd.DataFrame, class_counts_split: dict):
     ax.set_ylabel("Quantidade de Imagens")
     ax.set_title("Distribuição Estratificada por Classe no Dataset TrashNet (Treino 70%, Validação 15%, Teste 15% - Seed 42)")
     ax.set_xticks(x)
-    ax.set_xticklabels([f"{c}\n(Total: {class_counts_split[c]['total']} | w={class_counts_split[c]['class_weight']:.2f})" for c in CLASSES])
+    ax.set_xticklabels(
+        [f"{c}\nTotal: {class_counts_split[c]['total']}\nw={class_counts_split[c]['class_weight']:.2f}" for c in CLASSES],
+        fontsize=9.5,
+    )
     ax.set_ylim(0, max(train_counts) * 1.16)
     ax.grid(axis="y", linestyle="--", alpha=0.5)
     ax.legend(loc="upper right", frameon=True)
