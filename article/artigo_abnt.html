@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Classificação de Resíduos por Imagens com Redes Neurais Artificiais (TrashNet)</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 18mm 17mm 16mm 20mm;
+      @bottom-right {
+        content: counter(page) " / " counter(pages);
+        font-family: "Liberation Serif", "Times New Roman", Times, serif;
+        font-size: 9pt;
+        color: #444;
+      }
+    }
+
+    body {
+      font-family: "Liberation Serif", "Times New Roman", Times, serif;
+      font-size: 10.2pt;
+      line-height: 1.38;
+      color: #1a1a1a;
+      text-align: justify;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header-abnt {
+      text-align: center;
+      margin-bottom: 12pt;
+      border-bottom: 1px solid #bbb;
+      padding-bottom: 10pt;
+    }
+
+    .institution {
+      font-size: 10pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.4pt;
+      color: #0b3c7d;
+      margin-bottom: 6pt;
+    }
+
+    h1.paper-title {
+      font-size: 13.5pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      line-height: 1.25;
+      margin: 4pt 0 8pt 0;
+      color: #111;
+    }
+
+    .authors {
+      font-size: 9.5pt;
+      line-height: 1.35;
+      margin-bottom: 6pt;
+    }
+
+    .repo-link {
+      font-size: 9pt;
+      font-family: "Liberation Mono", "Courier New", monospace;
+      color: #0b3c7d;
+      word-break: break-all;
+    }
+
+    .abstract-box {
+      background-color: #f7f9fc;
+      border-left: 3px solid #0b3c7d;
+      padding: 8pt 10pt;
+      margin: 10pt 0 12pt 0;
+      font-size: 9.5pt;
+      line-height: 1.38;
+    }
+
+    .abstract-box p {
+      margin: 0 0 5pt 0;
+      text-indent: 0;
+    }
+
+    h2 {
+      font-size: 11.5pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #0b3c7d;
+      margin: 12pt 0 5pt 0;
+      border-bottom: 0.5pt solid #d0d7de;
+      padding-bottom: 2pt;
+      page-break-after: avoid;
+    }
+
+    h3 {
+      font-size: 10.5pt;
+      font-weight: bold;
+      color: #1f2937;
+      margin: 9pt 0 4pt 0;
+      page-break-after: avoid;
+    }
+
+    p {
+      margin: 0 0 6pt 0;
+      text-indent: 1.25cm;
+    }
+
+    p.no-indent {
+      text-indent: 0;
+    }
+
+    ul, ol {
+      margin: 4pt 0 7pt 0;
+      padding-left: 20pt;
+    }
+
+    li {
+      margin-bottom: 2.5pt;
+    }
+
+    .figure-block {
+      margin: 8pt 0 10pt 0;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+
+    .figure-title {
+      font-size: 9pt;
+      font-weight: bold;
+      margin-bottom: 4pt;
+      text-align: center;
+    }
+
+    .figure-block img {
+      max-width: 100%;
+      height: auto;
+      border: 0.5pt solid #ddd;
+    }
+
+    .figure-source {
+      font-size: 8.2pt;
+      color: #444;
+      margin-top: 3pt;
+      text-align: center;
+    }
+
+    .table-block {
+      margin: 8pt 0 10pt 0;
+      page-break-inside: avoid;
+    }
+
+    .table-title {
+      font-size: 9pt;
+      font-weight: bold;
+      margin-bottom: 4pt;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8pt;
+      line-height: 1.22;
+    }
+
+    th, td {
+      border: 0.5pt solid #999;
+      padding: 3pt 4pt;
+      text-align: center;
+    }
+
+    th {
+      background-color: #e8eef6;
+      font-weight: bold;
+      color: #0b3c7d;
+    }
+
+    td.left, th.left {
+      text-align: left;
+    }
+
+    tr.highlight {
+      background-color: #f0f7ff;
+      font-weight: bold;
+    }
+
+    .table-source {
+      font-size: 8pt;
+      color: #444;
+      margin-top: 3pt;
+      text-align: left;
+    }
+
+    .references {
+      font-size: 9pt;
+      line-height: 1.32;
+    }
+
+    .references p {
+      text-indent: -1cm;
+      padding-left: 1cm;
+      text-align: left;
+      margin-bottom: 5pt;
+    }
+
+    code {
+      font-family: "Liberation Mono", "Courier New", monospace;
+      font-size: 8.8pt;
+      background-color: #f2f4f7;
+      padding: 0 2pt;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-abnt">
+    <div class="institution">Universidade de Fortaleza (UNIFOR) — Educação a Distância (EAD) | Disciplina: Redes Neurais Artificiais</div>
+    <h1 class="paper-title">Classificação de Resíduos Sólidos por Imagens com Redes Neurais Artificiais: Comparação entre MLP, CNN, Pesos de Classe, Resolução e Transferência de Aprendizagem com YOLO</h1>
+    <div class="authors">
+      <strong>Equipe:</strong> [Nome Completo Integrante 1] (Matrícula: [XXXXXXX]); [Nome Completo Integrante 2] (Matrícula: [XXXXXXX]);<br>
+      [Nome Completo Integrante 3] (Matrícula: [XXXXXXX]); [Nome Completo Integrante 4] (Matrícula: [XXXXXXX])
+    </div>
+    <div class="repo-link">Repositório GitHub: https://github.com/ChicoXavier/trashnet-rna-unifor</div>
+  </div>
+
+  <div class="abstract-box">
+    <p><strong>RESUMO:</strong> A triagem automatizada de resíduos sólidos recicláveis é um desafio relevante de visão computacional devido à variabilidade visual dos materiais e ao desequilíbrio entre categorias. Este trabalho apresenta um estudo experimental controlado com o conjunto de dados <em>TrashNet</em> (2.527 imagens em seis classes: <em>glass</em>, <em>paper</em>, <em>cardboard</em>, <em>plastic</em>, <em>metal</em> e <em>trash</em>), utilizando divisão estratificada fixa (70% treinamento, 15% validação e 15% teste; semente 42). Foram executados seis experimentos obrigatórios comparando <em>Multilayer Perceptron</em> (MLP) e Rede Neural Convolucional (CNN) com e sem pesos de classe em 128 × 96 pixels, além da avaliação do efeito da resolução na CNN (128 × 96, 256 × 192 e 512 × 384) mantendo 28.358 parâmetros via <em>Global Average Pooling</em>. Como extensão opcional, aplicou-se transferência de aprendizagem com <em>YOLO11n-cls</em> (224 × 224). Nos experimentos obrigatórios, a CNN em 128 × 96 sem pesos obteve o maior F1 macro de validação (0,7229) e 72,37% de acurácia no teste (F1 macro 0,6754), superando amplamente a MLP (38,42% e 0,2941, com 9,47 milhões de parâmetros). Os pesos de classe elevaram o <em>recall</em> da classe minoritária <em>trash</em> de 0,30 para 0,75 na CNN (F1 macro 0,6833), à custa de menor precisão. O aumento de resolução para 512 × 384 elevou o custo temporal em 20 vezes por época sem ganhos de desempenho (56,84%). Por fim, o <em>YOLO11n-cls</em> atingiu 93,16% de acurácia e 0,9198 de F1 macro no mesmo conjunto de teste, evidenciando o impacto do pré-treinamento em larga escala.</p>
+    <p><strong>Palavras-chave:</strong> Redes Neurais Artificiais. Visão Computacional. TrashNet. Classificação de Resíduos. Transferência de Aprendizagem.</p>
+  </div>
+
+  <h2>1 Introdução</h2>
+  <p>O gerenciamento eficiente de resíduos sólidos urbanos depende diretamente da correta segregação dos materiais recicláveis. No entanto, a triagem manual está sujeita a erros humanos, fadiga e riscos ocupacionais. Nesse contexto, técnicas de aprendizado profundo (<em>Deep Learning</em>) e Redes Neurais Artificiais (RNAs) aplicadas à visão computacional oferecem uma alternativa promissora para identificar automaticamente materiais como vidro, papel, papelão, plástico e metal a partir de imagens digitais (GOODFELLOW et al., 2016).</p>
+  <p>Conforme os fundamentos teóricos das RNAs, arquiteturas do tipo <em>Multilayer Perceptron</em> (MLP) empregam camadas totalmente conectadas e propagação <em>feedforward</em> com funções de ativação suaves e diferenciáveis para aprender mapeamentos não lineares por meio do algoritmo de retropropagação do erro (<em>backpropagation</em>), superando as limitações de separabilidade linear do Perceptron Simples e do ADALINE (RUMELHART; HINTON; WILLIAMS, 1986; HAYKIN, 2001; SILVA; SPATTI; FLAUZINO, 2010). Contudo, ao vetorizar imagens RGB diretamente na entrada, a topologia MLP perde a relação geométrica de vizinhança espacial e sofre explosão paramétrica na primeira camada. Em contrapartida, no paradigma de <em>Deep Learning</em>, as Redes Neurais Convolucionais (CNNs) preservam a entrada matricial e realizam extração e seleção de características embutidas por meio de filtros compartilhados e subamostragem (<em>pooling</em>), aprendendo mapas hierárquicos de bordas, cantos, contornos e partes de objetos (ZEILER; FERGUS, 2014; GOODFELLOW et al., 2016).</p>
+  <p>O objetivo deste estudo é investigar empiricamente o desempenho e o custo computacional de modelos MLP e CNN na classificação das seis classes do conjunto de dados <em>TrashNet</em> (YANG; THUNG, 2016). Especificamente, avaliam-se: (i) a diferença arquitetural entre MLP e CNN em 128 × 96 pixels; (ii) o efeito da ponderação de classes na função de perda sobre a classe minoritária <em>trash</em>; (iii) o custo-benefício do aumento de resolução espacial (128 × 96, 256 × 192 e 512 × 384) na CNN; e (iv) como objetivo extra opcional, os ganhos obtidos por transferência de aprendizagem com a arquitetura <em>YOLO11n-cls</em>.</p>
+
+  <h2>2 Materiais e Métodos</h2>
+
+  <h3>2.1 Conjunto de Dados e Análise Exploratória</h3>
+  <p>Utilizou-se exclusivamente o arquivo oficial <code>dataset-resized.zip</code> do <em>TrashNet</em>, composto por 2.527 imagens coloridas no formato RGB com dimensão padrão de 512 × 384 pixels (largura × altura), distribuídas em seis classes: <em>glass</em> (501), <em>paper</em> (594), <em>cardboard</em> (403), <em>plastic</em> (482), <em>metal</em> (410) e <em>trash</em> (137). A inspeção automatizada de integridade confirmou zero arquivos corrompidos e 100% das amostras no modo RGB. Entretanto, a verificação por assinatura criptográfica (MD5) revelou três pares de arquivos idênticos rotulados em categorias distintas: <code>plastic152.jpg</code>/<code>glass176.jpg</code>, <code>plastic332.jpg</code>/<code>glass389.jpg</code> e <code>metal91.jpg</code>/<code>glass115.jpg</code>. Optou-se por manter o conjunto íntegro para preservar a comparabilidade com a literatura, documentando tal ruído de rotulagem como fator limitante.</p>
+  <p>Visualmente, as fotografias do <em>TrashNet</em> foram capturadas em ambiente controlado sobre fundo claro uniforme, com iluminação variável e objetos individuais frequentemente amassados, translúcidos (vidro e plástico) ou com reflexos metálicos (metal e vidro), o que dificulta a discriminação apenas por cor global. A Figura 1 exibe a distribuição estratificada e a Figura 2 apresenta exemplos representativos das seis classes.</p>
+
+  <div class="figure-block">
+    <div class="figure-title">Figura 1 – Distribuição estratificada das seis classes do TrashNet (70% treino, 15% validação, 15% teste)</div>
+    <img src="../results/figures/fig1_distribuicao_classes.png" style="max-height: 175pt;">
+    <div class="figure-source">Fonte: Elaborada pelos autores (2026).</div>
+  </div>
+
+  <div class="figure-block">
+    <div class="figure-title">Figura 2 – Exemplos representativos das seis classes no conjunto de treinamento</div>
+    <img src="../results/figures/fig2_exemplos_classes.png" style="max-height: 165pt;">
+    <div class="figure-source">Fonte: Elaborada pelos autores a partir de Yang e Thung (2016).</div>
+  </div>
+
+  <h3>2.2 Divisão Estratificada, Pré-processamento e Prevenção de Vazamento</h3>
+  <p>Para garantir reprodutibilidade e impedir vazamento de dados (<em>data leakage</em>), aplicou-se divisão estratificada fixa com semente <code>42</code> em todos os experimentos: 1.768 imagens (70%) para treinamento, 379 (15%) para validação e 380 (15%) para teste, mantendo em todos os subconjuntos a proporção original de ~5,42% da classe <em>trash</em> (96, 21 e 20 imagens, respectivamente). As imagens foram convertidas para RGB, redimensionadas por interpolação bilinear a partir da referência 512 × 384 para 128 × 96 e 256 × 192 (Figura 3) e normalizadas para o intervalo [0, 1] mediante divisão por 255. Para referência estatística exclusiva do treinamento, registraram-se médias RGB de [0,6727; 0,6396; 0,6045] e desvios padrão de [0,1836; 0,1826; 0,1933]. O aumento de dados leve (espelhamento horizontal com <em>p</em> = 0,5 e vertical com <em>p</em> = 0,25) foi aplicado exclusivamente durante o treinamento das CNNs.</p>
+
+  <div class="figure-block">
+    <div class="figure-title">Figura 3 – Comparação visual da amostra <code>metal107.jpg</code> nas três resoluções experimentais (L × A)</div>
+    <img src="../results/figures/fig3_comparacao_resolucoes.png" style="max-height: 135pt;">
+    <div class="figure-source">Fonte: Elaborada pelos autores (2026).</div>
+  </div>
+
+  <h3>2.3 Arquitetura, Topologia e Protocolo dos Experimentos Controlados</h3>
+  <p>Distinguindo <em>arquitetura</em> (fluxo macroscópico do sinal) de <em>topologia</em> (hiperparâmetros internos definidos pelo projetista), todos os modelos obrigatórios foram implementados em PyTorch e treinados do zero em modo <em>offline</em> por mini-lotes (<em>batch size</em> = 32) com semente fixa (<code>42</code>), otimizador <strong>Adam</strong> (taxa de aprendizagem inicial <em>lr</em> = 10<sup>−3</sup>, decaimento de pesos 10<sup>−4</sup>, escalonador <em>ReduceLROnPlateau</em> com fator 0,5 e paciência 3), função de perda Entropia Cruzada (<em>CrossEntropyLoss</em>) e ativação <strong>ReLU</strong> (<em>g(u) = max(0, u)</em>) nas camadas intermediárias — escolhida para eliminar operações exponenciais e mitigar o desvanecimento do gradiente nas caudas de saturação das sigmoidais. Adotou-se <strong>Parada Antecipada (<em>Early Stopping</em>)</strong> com contador de paciência (8 épocas em 128 × 96, 7 em 256 × 192 e 6 em 512 × 384) monitorando o <strong>F1 macro de validação</strong>, restaurando os pesos da melhor época antes da avaliação única no teste.</p>
+  <ul>
+    <li><strong>MLP (128 × 96):</strong> Vetorização da imagem RGB (96 × 128 × 3 = 36.864 entradas), duas camadas ocultas densas (256 e 128 neurônios) com ReLU, <em>Dropout</em> (taxa 0,20, desativando 20% dos neurônios no treino para distribuir o conhecimento) e camada de saída com 6 neurônios (9.471.110 parâmetros).</li>
+    <li><strong>CNN (128 × 96, 256 × 192 e 512 × 384):</strong> Estruturada em duas regiões funcionais: (1) <em>Extração e Seleção de Características</em> — três blocos sequenciais de Convolução 2D (16, 32 e 64 filtros 3×3 com <em>padding</em> 1 e <em>stride</em> 2 no primeiro bloco), <em>BatchNorm2d</em>, ReLU e <em>MaxPooling2D</em> (2×2), culminando em <em>Global Average Pooling</em> (<code>AdaptiveAvgPool2d(1)</code>); e (2) <em>Decisão</em> — vetorização (<code>Flatten</code>) seguida de MLP densa (64 neurônios ReLU + <em>Dropout</em> 0,20 + 6 saídas), mantendo exatamente <strong>28.358 parâmetros</strong> nas três resoluções.</li>
+    <li><strong>Pesos de Classe:</strong> Nos Experimentos 2 (MLP) e 4 (CNN), utilizaram-se pesos inversamente proporcionais à frequência calculados apenas no treino: <em>w<sub>c</sub> = N<sub>treino</sub> / (6 · N<sub>treino,c</sub>)</em>, resultando em <em>glass</em> = 0,8419; <em>paper</em> = 0,7083; <em>cardboard</em> = 1,0449; <em>plastic</em> = 0,8744; <em>metal</em> = 1,0267; e <em>trash</em> = 3,0694.</li>
+  </ul>
+  <p><strong>Objetivo Extra (YOLO11n-cls):</strong> Aplicou-se transferência de aprendizagem com o modelo <code>yolo11n-cls.pt</code> (Ultralytics 8.4.216, pré-treinado no ImageNet-1K, 1.538.790 parâmetros) no modo <em>classify</em>, preservando exatamente os mesmos diretórios de treino, validação e teste da semente 42. O ajuste fino ocorreu em 224 × 224 pixels por 20 épocas com otimizador AdamW (<em>lr0</em> = 0,001, lote 32) e aumentação padrão do <em>YOLO classify</em> apenas no treino.</p>
+  <p><strong>Hardware e Medição de Custo:</strong> Todos os treinamentos foram executados em CPU Intel Core i7-4850HQ @ 2,30 GHz (16 GB de RAM, macOS 11.7). Não havia GPU CUDA disponível; portanto, registrou-se o pico de memória RAM (RSS) via biblioteca <code>psutil</code> e cronometrou-se exclusivamente o laço de treinamento e validação por época via <code>time.perf_counter()</code>, excluindo download e pré-carregamento.</p>
+
+  <h2>3 Resultados</h2>
+  <p>A Tabela 1 consolida as métricas de desempenho (validação e teste) e o custo computacional dos seis experimentos obrigatórios e do experimento bônus com YOLO11n-cls. A Tabela 2 detalha precisão, <em>recall</em>, F1 e suporte por classe no conjunto de teste (380 amostras), utilizando <code>zero_division=0</code> quando uma classe não recebe nenhuma predição.</p>
+
+  <div class="table-block">
+    <div class="table-title">Tabela 1 – Desempenho comparativo e custo computacional dos experimentos no TrashNet (Seed = 42)</div>
+    <table>
+      <thead>
+        <tr>
+          <th class="left">Experimento</th>
+          <th>Res. (L×A)</th>
+          <th>Pesos</th>
+          <th>Parâmetros</th>
+          <th>Tam. (MB)</th>
+          <th>Épocas (Melhor/Tot)</th>
+          <th>Tempo Tot. (s)</th>
+          <th>Tempo/Ép. (s)</th>
+          <th>Pico RAM (MB)</th>
+          <th>Val F1 Macro</th>
+          <th>Teste Acc</th>
+          <th>Teste F1 Macro</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="left">Exp 1: MLP</td><td>128×96</td><td>Não</td><td>9.471.110</td><td>36,13</td><td>12 / 20</td><td>62,04</td><td>3,10</td><td>1.012,6</td><td>0,3330</td><td>38,42%</td><td>0,2941</td>
+        </tr>
+        <tr>
+          <td class="left">Exp 2: MLP</td><td>128×96</td><td>Sim</td><td>9.471.110</td><td>36,13</td><td>6 / 14</td><td>43,40</td><td>3,10</td><td>1.012,8</td><td>0,1987</td><td>28,95%</td><td>0,2005</td>
+        </tr>
+        <tr class="highlight">
+          <td class="left">Exp 3: CNN (Melhor Val)</td><td>128×96</td><td>Não</td><td>28.358</td><td>0,12</td><td>35 / 35</td><td>102,70</td><td>2,93</td><td>895,8</td><td>0,7229</td><td>72,37%</td><td>0,6754</td>
+        </tr>
+        <tr>
+          <td class="left">Exp 4: CNN</td><td>128×96</td><td>Sim</td><td>28.358</td><td>0,12</td><td>33 / 35</td><td>101,11</td><td>2,89</td><td>729,6</td><td>0,7187</td><td>70,53%</td><td>0,6833</td>
+        </tr>
+        <tr>
+          <td class="left">Exp 5: CNN</td><td>256×192</td><td>Não</td><td>28.358</td><td>0,12</td><td>26 / 30</td><td>340,62</td><td>11,35</td><td>2.188,7</td><td>0,6641</td><td>71,84%</td><td>0,6694</td>
+        </tr>
+        <tr>
+          <td class="left">Exp 6: CNN</td><td>512×384</td><td>Não</td><td>28.358</td><td>0,12</td><td>6 / 12</td><td>708,35</td><td>59,03</td><td>6.601,8</td><td>0,5723</td><td>56,84%</td><td>0,4992</td>
+        </tr>
+        <tr class="highlight">
+          <td class="left">Exp 7 (Bônus): YOLO11n-cls</td><td>224×224</td><td>Pré-treinado</td><td>1.538.790</td><td>3,05</td><td>20 / 20</td><td>2.404,90</td><td>120,25</td><td>474,5</td><td>0,9208*</td><td>93,16%</td><td>0,9198</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-source">Fonte: Elaborada pelos autores (2026). *Para o YOLO11n-cls, registra-se a acurácia Top-1 de validação reportada nativamente pelo Ultralytics.</div>
+  </div>
+
+  <div class="table-block">
+    <div class="table-title">Tabela 2 – Métricas por classe no conjunto de teste (380 imagens; <code>zero_division=0</code>)</div>
+    <table>
+      <thead>
+        <tr>
+          <th class="left">Experimento</th>
+          <th>glass (sup=76)<br>P / R / F1</th>
+          <th>paper (sup=89)<br>P / R / F1</th>
+          <th>cardboard (sup=60)<br>P / R / F1</th>
+          <th>plastic (sup=73)<br>P / R / F1</th>
+          <th>metal (sup=62)<br>P / R / F1</th>
+          <th>trash (sup=20)<br>P / R / F1</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="left">Exp 1: MLP (128×96)</td>
+          <td>0,27 / 0,21 / 0,24</td><td>0,30 / 0,70 / 0,42</td><td>0,67 / 0,65 / 0,66</td><td>0,51 / 0,40 / 0,45</td><td>0,00 / 0,00 / 0,00</td><td>0,00 / 0,00 / 0,00</td>
+        </tr>
+        <tr>
+          <td class="left">Exp 2: MLP (128×96, Pesos)</td>
+          <td>0,23 / 0,84 / 0,36</td><td>0,50 / 0,01 / 0,02</td><td>0,48 / 0,68 / 0,57</td><td>0,00 / 0,00 / 0,00</td><td>0,00 / 0,00 / 0,00</td><td>0,36 / 0,20 / 0,26</td>
+        </tr>
+        <tr>
+          <td class="left">Exp 3: CNN (128×96)</td>
+          <td>0,66 / 0,80 / 0,72</td><td>0,73 / 0,88 / 0,80</td><td>0,90 / 0,87 / 0,88</td><td>0,78 / 0,63 / 0,70</td><td>0,60 / 0,52 / 0,56</td><td>0,60 / 0,30 / 0,40</td>
+        </tr>
+        <tr>
+          <td class="left">Exp 4: CNN (128×96, Pesos)</td>
+          <td>0,64 / 0,75 / 0,69</td><td>0,88 / 0,75 / 0,81</td><td>0,98 / 0,83 / 0,90</td><td>0,87 / 0,55 / 0,67</td><td>0,64 / 0,63 / 0,63</td><td>0,26 / 0,75 / 0,39</td>
+        </tr>
+        <tr>
+          <td class="left">Exp 5: CNN (256×192)</td>
+          <td>0,59 / 0,83 / 0,69</td><td>0,72 / 0,91 / 0,80</td><td>0,89 / 0,90 / 0,89</td><td>0,87 / 0,55 / 0,67</td><td>0,66 / 0,47 / 0,55</td><td>0,67 / 0,30 / 0,41</td>
+        </tr>
+        <tr>
+          <td class="left">Exp 6: CNN (512×384)</td>
+          <td>0,37 / 0,74 / 0,49</td><td>0,64 / 0,62 / 0,63</td><td>0,91 / 0,68 / 0,78</td><td>0,75 / 0,52 / 0,61</td><td>0,57 / 0,42 / 0,48</td><td>0,00 / 0,00 / 0,00</td>
+        </tr>
+        <tr class="highlight">
+          <td class="left">Exp 7: YOLO11n-cls (Bônus)</td>
+          <td>0,89 / 0,96 / 0,92</td><td>0,96 / 0,96 / 0,96</td><td>0,98 / 0,97 / 0,97</td><td>0,94 / 0,86 / 0,90</td><td>0,94 / 0,94 / 0,94</td><td>0,81 / 0,85 / 0,83</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-source">Fonte: Elaborada pelos autores (2026). Valores abreviados (P = Precisão, R = Recall, F1 = F1-score, sup = suporte).</div>
+  </div>
+
+  <p>As curvas de perda e acurácia por época dos seis experimentos obrigatórios são exibidas na Figura 4, evidenciando a estabilidade de convergência das CNNs em 128 × 96 e 256 × 192 frente à estagnação precoce das MLPs e às oscilações de validação da CNN em 512 × 384. Na Figura 5, apresentam-se as matrizes de confusão no conjunto de teste com contagens absolutas e porcentagens por linha na ordem canônica das classes.</p>
+
+  <div class="figure-block">
+    <div class="figure-title">Figura 4 – Curvas de aprendizagem (perda e acurácia de treino e validação) dos seis experimentos obrigatórios</div>
+    <img src="../results/figures/fig4_curvas_aprendizagem_6exp.png" style="max-height: 495pt;">
+    <div class="figure-source">Fonte: Elaborada pelos autores (2026).</div>
+  </div>
+
+  <div class="figure-block">
+    <div class="figure-title">Figura 5 – Matrizes de confusão no conjunto de teste (contagens e porcentagens por linha)</div>
+    <img src="../results/figures/fig5_matrizes_confusao_6exp.png" style="max-height: 470pt;">
+    <div class="figure-source">Fonte: Elaborada pelos autores (2026).</div>
+  </div>
+
+  <p>A Figura 6 ilustra o efeito do aumento de resolução na CNN sem pesos de classe (Experimentos 3, 5 e 6), contrapondo acurácia/F1 macro de teste ao tempo médio por época e ao tempo total de treinamento. Na Figura 7, realiza-se a análise qualitativa dos erros do modelo obrigatório de maior F1 macro na validação (<strong>Exp 3: CNN 128 × 96 sem pesos</strong>, Val F1 Macro = 0,7229), exibindo seis amostras classificadas incorretamente dentre os 105 erros no teste (275 acertos em 380 imagens).</p>
+
+  <div class="figure-block">
+    <div class="figure-title">Figura 6 – Efeito da resolução na CNN sem pesos: (a) desempenho no teste e (b) custo temporal</div>
+    <img src="../results/figures/fig6_efeito_resolucao_cnn.png" style="max-height: 175pt;">
+    <div class="figure-source">Fonte: Elaborada pelos autores (2026).</div>
+  </div>
+
+  <div class="figure-block">
+    <div class="figure-title">Figura 7 – Análise de erros do melhor modelo obrigatório na validação (Exp 3: CNN 128 × 96 sem pesos)</div>
+    <img src="../results/figures/fig7_analise_erros_melhor_modelo.png" style="max-height: 235pt;">
+    <div class="figure-source">Fonte: Elaborada pelos autores (2026).</div>
+  </div>
+
+  <p>Por fim, a Figura 8 apresenta as curvas de perda e acurácia na validação e a matriz de confusão no mesmo conjunto de teste para o objetivo extra com <strong>YOLO11n-cls</strong>, que alcançou 93,16% de acurácia global (apenas 26 erros em 380 amostras) e 0,9198 de F1 macro.</p>
+
+  <div class="figure-block">
+    <div class="figure-title">Figura 8 – Avaliação do objetivo extra com YOLO11n-cls (224 × 224): perda, acurácia Top-1 e matriz de confusão no teste</div>
+    <img src="../results/figures/fig8_yolo_bonus_avaliacao.png" style="max-height: 170pt;">
+    <div class="figure-source">Fonte: Elaborada pelos autores (2026).</div>
+  </div>
+
+  <h2>4 Discussão</h2>
+
+  <h3>4.1 Arquiteturas: MLP versus CNN em 128 × 96</h3>
+  <p>A comparação controlada em 128 × 96 pixels demonstra a superioridade estrutural das CNNs sobre as MLPs em tarefas visuais. A MLP (Exp 1) possui 9.471.110 parâmetros (36,13 MB), pois conecta cada um dos 36.864 valores RGB da imagem achatada a todos os neurônios ocultos, perdendo a topologia bidimensional. Como consequência, a MLP estagnou rapidamente (<em>Early Stopping</em> na época 20, melhor época 12), obtendo 38,42% de acurácia e 0,2941 de F1 macro no teste, com colapso completo (F1 = 0,00 via <code>zero_division=0</code>) em <em>metal</em> e <em>trash</em>, pois a rede passou a favorecer classes majoritárias de fundo uniforme como <em>paper</em> (recall 0,70) e <em>cardboard</em> (0,65).</p>
+  <p>Em contraste, a CNN (Exp 3) utilizou apenas <strong>28.358 parâmetros</strong> (334 vezes menor e 0,12 MB em disco) graças ao compartilhamento de filtros convolucionais e ao <em>Global Average Pooling</em>, alcançando 72,37% de acurácia e 0,6754 de F1 macro no teste. As curvas da Figura 4 mostram que, enquanto a MLP apresenta estagnação após a época 12 com grande lacuna em relação à capacidade de discriminação, a CNN mantém queda consistente da perda de treino e validação até a época 35, sem sinais severos de sobreajuste (<em>overfitting</em>), validando a eficácia da regularização combinada por <em>BatchNorm</em>, <em>Dropout</em> e aumento de dados geométrico.</p>
+
+  <h3>4.2 Efeito do Desequilíbrio e dos Pesos de Classe</h3>
+  <p>A introdução de pesos inversamente proporcionais à frequência (com destaque para <em>w<sub>trash</sub></em> = 3,0694 frente a <em>w<sub>paper</sub></em> = 0,7083) produziu efeitos opostos nas duas arquiteturas. Na MLP (Exp 2), a amplificação do gradiente para a classe minoritária desestabilizou o espaço de alta dimensão não estruturado: o <em>recall</em> de <em>trash</em> subiu de 0,00 para 0,20, mas as classes <em>plastic</em> e <em>metal</em> zeraram completamente (<code>zero_division=0</code>) e a acurácia global caiu para 28,95% (F1 macro 0,2005).</p>
+  <p>Na CNN (Exp 4), porém, a ponderação cumpriu seu papel com clareza: o <em>recall</em> de <em>trash</em> saltou de 0,30 (Exp 3) para <strong>0,75</strong> (15 de 20 amostras identificadas corretamente), elevando também o F1 de <em>metal</em> (0,56 → 0,63) e o F1 macro global de teste (0,6754 → <strong>0,6833</strong>). Em contrapartida, a penalização severa de erros em <em>trash</em> gerou falsos positivos nessa categoria, reduzindo a precisão de <em>trash</em> de 0,60 para 0,26 e a acurácia global de 72,37% para 70,53%. Trata-se do clássico compromisso (<em>trade-off</em>) entre sensibilidade e precisão em classes raras.</p>
+
+  <h3>4.3 Efeito da Resolução na CNN e Custo Computacional</h3>
+  <p>Graças ao <em>Global Average Pooling</em>, o número de parâmetros manteve-se idêntico (28.358) nas resoluções 128 × 96, 256 × 192 e 512 × 384. Entretanto, o custo computacional cresceu drasticamente: o tempo médio por época subiu de 2,93 s (128 × 96) para 11,35 s (256 × 192, ~3,9×) e 59,03 s (512 × 384, ~20,1×), enquanto o pico de RAM saltou de 895,8 MB para 2.188,7 MB e 6.601,8 MB (6,6 GB). Em termos de desempenho, 256 × 192 empatou estatisticamente com 128 × 96 (71,84% vs. 72,37% de acurácia), mas 512 × 384 sofreu queda acentuada para 56,84% de acurácia, F1 macro 0,4992 e <em>recall</em> nulo em <em>trash</em> (<em>Early Stopping</em> na época 12, melhor época 6).</p>
+  <p>Esse comportamento explica-se pelo campo receptivo efetivo: mantendo fixos os três blocos convolucionais e filtros 3×3, uma imagem quatro vezes maior em cada eixo faz com que cada núcleo observe uma fração 16 vezes menor da área do objeto, capturando texturas locais finas ou ruídos de fundo em detrimento da forma global. Portanto, <strong>imagens maiores não compensaram o aumento de tempo e memória</strong> nesta arquitetura controlada. Ademais, confirma-se a assimetria prática do <em>Deep Learning</em>: embora o treinamento em 512 × 384 seja custoso em CPU, após fixados os pesos sinápticos a inferência no conjunto de teste ocorre em milissegundos com arquivo de apenas 0,12 MB.</p>
+
+  <h3>4.4 Análise de Erros, Limitações do Dataset e Comparação com a Literatura</h3>
+  <p>Na análise de erros do Exp 3 (Figura 7) e nas matrizes de confusão (Figura 5), as maiores confusões ocorreram entre <em>glass</em>, <em>plastic</em> e <em>metal</em> (ex.: <code>metal376.jpg</code> previsto como <em>glass</em> com 84,5% e <code>glass27.jpg</code> previsto como <em>metal</em> com 83,5%) devido a transparência, brilho especular e reflexos metálicos semelhantes; e entre <em>paper</em>, <em>cardboard</em> e <em>plastic</em> (ex.: <code>plastic364.jpg</code> previsto como <em>paper</em> com 93,1% e <code>cardboard277.jpg</code> como <em>paper</em> com 81,8%) por tonalidades claras e dobras semelhantes. Embora o dataset seja útil para experimentação controlada, suas limitações — fundo branco homogêneo, ausência de múltiplos objetos sobrepostos, iluminação de estúdio e presença dos três pares de imagens duplicadas com rótulos conflitantes — restringem a generalização direta para esteiras industriais ou fotografias reais ao ar livre.</p>
+  <p>Na comparação com o estudo original de Yang e Thung (2016), que relataram 63% de acurácia com SVM em seis classes e 22% com CNN em cinco classes (excluindo <em>trash</em> por desequilíbrio), e com a continuação posterior documentada no README do repositório <em>TrashNet</em> (~75% com CNN), nossos resultados da CNN em 128 × 96 (72,37%) situam-se em patamar próximo ao da continuação do repositório e muito acima da CNN inicial do artigo. Ressalta-se, contudo, que os números não são diretamente equiparáveis como o mesmo experimento, pois diferem na inclusão permanente de <em>trash</em>, na divisão estratificada fixa (70/15/15 vs. 70/13/17), na resolução de entrada e na adoção de <em>BatchNorm</em> e <em>Global Average Pooling</em>.</p>
+
+  <h3>4.5 Discussão do Objetivo Extra: Transferência de Aprendizagem com YOLO11n-cls</h3>
+  <p>Ao comparar a melhor CNN obrigatória na validação (Exp 3: 72,37% Acc; 0,6754 F1 macro) com o modelo <strong>YOLO11n-cls</strong> (Exp 7: <strong>93,16% Acc</strong>; <strong>0,9198 F1 macro</strong>), observa-se um salto de +20,79 pontos percentuais em acurácia e +0,2444 em F1 macro, com F1 de <strong>0,8293</strong> na classe minoritária <em>trash</em> (17 de 20 acertos) e redução dos erros no teste de 105 para apenas 26. Esse ganho reflete diretamente o princípio de <em>Transfer Learning</em> e <em>Fine-Tuning</em>: (i) a 1ª região pré-treinada na base <em>ImageNet-1K</em> já fornece extratores universais de bordas, contornos e reflexos (YOSINSKI et al., 2014); (ii) a arquitetura moderna com blocos C3k2 (1,54M parâmetros) possui maior capacidade representacional; e (iii) a resolução 224 × 224 aliada à aumentação automática (<em>RandAugment</em>) amplia a generalização. Embora o ajuste fino tenha exigido 2.404,9 s (~40 min) em CPU, a inferência manteve-se leve (~14,4 ms/imagem).</p>
+
+  <h2>5 Conclusão</h2>
+  <p>Este estudo comprovou empiricamente que, para classificação de imagens de resíduos no <em>TrashNet</em>, as CNNs superam amplamente as MLPs com menos de 0,3% da quantidade de parâmetros, que a ponderação de classes é eficaz para elevar a sensibilidade da classe minoritária <em>trash</em> em CNNs (<em>recall</em> de 0,30 para 0,75), e que o aumento de resolução para 512 × 384 sem aprofundamento arquitetural degrada a generalização enquanto multiplica por 20 o custo temporal por época. Por fim, o experimento extra com <em>YOLO11n-cls</em> demonstrou que a transferência de aprendizagem é o caminho mais efetivo para bases pequenas e desbalanceadas, alcançando 93,16% de acurácia. Como trabalhos futuros, sugerem-se a remoção ou revisão dos pares duplicados conflitantes, busca sistemática de hiperparâmetros e validação em cenários reais com fundos complexos.</p>
+
+  <h2>Referências</h2>
+  <div class="references">
+    <p>BARBOSA, Paulo Cirillo Souza. <strong>Redes Neurais Artificiais</strong>: Percursos de Aprendizagem 1 a 4. Fortaleza: Universidade de Fortaleza (EAD Unifor), 2025.</p>
+    <p>BISHOP, Christopher M.; NASRABADI, Nasser M. <strong>Pattern recognition and machine learning</strong>. New York: Springer, 2006.</p>
+    <p>GOODFELLOW, Ian; BENGIO, Yoshua; COURVILLE, Aaron. <strong>Deep learning</strong>. Cambridge: MIT Press, 2016.</p>
+    <p>HAYKIN, Simon. <strong>Redes neurais</strong>: princípios e prática. 2. ed. Porto Alegre: Bookman, 2001.</p>
+    <p>JOCHER, Glenn; CHAURASIA, Ayush; QIU, Jing. <strong>Ultralytics YOLO11</strong>: Classification documentation. 2024. Disponível em: https://docs.ultralytics.com/tasks/classify/. Acesso em: 22 nov. 2026.</p>
+    <p>PASZKE, Adam et al. PyTorch: An imperative style, high-performance deep learning library. In: <strong>Advances in Neural Information Processing Systems (NeurIPS)</strong>, v. 32, 2019.</p>
+    <p>RUMELHART, David E.; HINTON, Geoffrey E.; WILLIAMS, Ronald J. Learning representations by back-propagating errors. <strong>Nature</strong>, v. 323, p. 533-536, 1986.</p>
+    <p>SILVA, Ivan Nunes da; SPATTI, Danilo Hernane; FLAUZINO, Rogério Andrade. <strong>Redes neurais artificiais para engenharia e ciências aplicadas</strong>. São Paulo: Artliber, 2010.</p>
+    <p>YANG, Mindy; THUNG, Gary. <strong>Classification of trash for recyclability status</strong>. Stanford University: CS229 Project Report, 2016. Repositório e dataset disponíveis em: https://github.com/garythung/trashnet. Acesso em: 22 nov. 2026.</p>
+    <p>YOSINSKI, Jason et al. How transferable are features in deep neural networks? In: <strong>Advances in Neural Information Processing Systems (NeurIPS)</strong>, v. 27, 2014.</p>
+    <p>ZEILER, Matthew D.; FERGUS, Rob. Visualizing and understanding convolutional networks. In: <strong>Computer Vision – ECCV 2014</strong>. Cham: Springer, 2014. p. 818-833.</p>
+  </div>
+
+</body>
+</html>

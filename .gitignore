@@ -1,0 +1,14 @@
+# Ambientes virtuais e caches Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+# Dataset bruto (baixar via README.md a partir do repositório oficial TrashNet)
+data/dataset-resized.zip
+data/dataset-resized/
+data/yolo_trashnet_split42/
+
+# Arquivos temporários do Ultralytics
+yolo11n-cls.pt
