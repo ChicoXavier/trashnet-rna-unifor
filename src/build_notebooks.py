@@ -30,8 +30,9 @@ def build_nb1_eda():
         nbf.v4.new_markdown_cell(
             "# 01 — Análise Exploratória de Dados (EDA) e Divisão Estratificada\n\n"
             "**Atividade Final de Redes Neurais Artificiais — EAD Unifor (TrashNet)**\n\n"
-            "Este notebook inspeciona o dataset oficial `dataset-resized.zip` (2.527 imagens em `512 × 384`), "
-            "verifica integridade, dimensões, canais de cor e duplicações, realiza a divisão estratificada fixa "
+            "Este notebook inspeciona o dataset oficial `dataset-resized.zip` (2.527 imagens originais em `512 × 384`), "
+            "verifica integridade, dimensões, canais de cor e duplicações via MD5, remove os 6 arquivos pertencentes aos 3 pares "
+            "conflitantes (restando 2.521 imagens limpas), realiza a divisão estratificada fixa "
             "(70% treino, 15% validação, 15% teste com `seed = 42`) e exibe a distribuição e exemplos das 6 classes."
         ),
         nbf.v4.new_code_cell(
@@ -42,11 +43,13 @@ def build_nb1_eda():
             "BASE_DIR = Path('..').resolve()\n"
             "with open(BASE_DIR / 'results' / 'eda_summary.json', 'r', encoding='utf-8') as f:\n"
             "    eda = json.load(f)\n\n"
-            "print('Total de imagens:', eda['total_images'])\n"
+            "print('Total original:', eda['total_images_original'])\n"
+            "print('Arquivos removidos por duplicidade MD5 conflitante:', eda['removed_conflicting_duplicates'])\n"
+            "print('Total limpo utilizado:', eda['total_images'])\n"
             "print('Arquivos corrompidos:', eda['corrupted_files'])\n"
             "print('Dimensões:', eda['dimensions_summary'])\n"
             "print('Modos de cor:', eda['color_modes'])\n"
-            "print('Pares MD5 idênticos encontrados:', eda['duplicate_md5_pairs'])\n"
+            "print('Pares MD5 conflitantes detectados:', eda['duplicate_md5_pairs_original'])\n"
             "print('Totais por divisão (seed=42):', eda['split_totals'])\n"
             "print('Média RGB no treino [0,1]:', eda['train_rgb_mean_0_1'])\n"
             "print('Desvio padrão RGB no treino [0,1]:', eda['train_rgb_std_0_1'])"
@@ -87,8 +90,8 @@ def build_nb2_training():
         nbf.v4.new_markdown_cell(
             "### Como reproduzir o treinamento completo (opcional)\n"
             "```bash\n"
-            ".venv/bin/python src/train_experiments.py\n"
-            ".venv/bin/python src/train_yolo_bonus.py\n"
+            "python src/train_experiments.py\n"
+            "python src/train_yolo_bonus.py\n"
             "```"
         ),
     ]

@@ -62,6 +62,7 @@ def build_comparative_tables(exp_data, yolo_data):
             "Epocas_Melhor_Total": ep_str,
             "Tempo_Total_s": e["total_train_time_sec"],
             "Tempo_Medio_Epoca_s": e["avg_epoch_time_sec"],
+            "Inferencia_ms_img": e.get("inference_ms_per_image", "-"),
             "Pico_RAM_MB": e["peak_ram_mb"],
             "Val_Acc": v_acc,
             "Val_F1_Macro": v_f1 if v_f1 is not None else "-",
@@ -90,7 +91,7 @@ def build_comparative_tables(exp_data, yolo_data):
 
 def plot_learning_curves_6exp(exp_data):
     exps = exp_data["experiments"]
-    fig, axes = plt.subplots(6, 2, figsize=(12.5, 18), sharex=False)
+    fig, axes = plt.subplots(6, 2, figsize=(13.5, 21), sharex=False)
 
     for idx, e in enumerate(exps):
         hist = pd.DataFrame(e["history"])
@@ -99,32 +100,34 @@ def plot_learning_curves_6exp(exp_data):
 
         # Coluna 0: Perda (Loss)
         ax_l = axes[idx, 0]
-        ax_l.plot(epochs, hist["train_loss"], label="Treino Loss", color="#1f77b4", linewidth=1.8)
-        ax_l.plot(epochs, hist["val_loss"], label="Validação Loss", color="#d62728", linewidth=1.8, linestyle="--")
-        ax_l.axvline(best_ep, color="green", linestyle=":", linewidth=1.4, label=f"Melhor Época ({best_ep})")
-        ax_l.set_title(f"{e['exp_label']} — Perda (Loss)", fontsize=10, fontweight="bold")
-        ax_l.set_ylabel("Loss")
+        ax_l.plot(epochs, hist["train_loss"], label="Treino Loss", color="#1f77b4", linewidth=2.2)
+        ax_l.plot(epochs, hist["val_loss"], label="Validação Loss", color="#d62728", linewidth=2.2, linestyle="--")
+        ax_l.axvline(best_ep, color="green", linestyle=":", linewidth=1.8, label=f"Melhor Época ({best_ep})")
+        ax_l.set_title(f"{e['exp_label']} — Perda (Loss)", fontsize=12, fontweight="bold")
+        ax_l.set_ylabel("Loss", fontsize=11)
+        ax_l.tick_params(labelsize=10)
         ax_l.grid(True, linestyle="--", alpha=0.45)
-        ax_l.legend(fontsize=8, loc="upper right")
+        ax_l.legend(fontsize=9.5, loc="upper right")
         if idx == 5:
-            ax_l.set_xlabel("Época")
+            ax_l.set_xlabel("Época", fontsize=11)
 
         # Coluna 1: Acurácia
         ax_a = axes[idx, 1]
-        ax_a.plot(epochs, hist["train_acc"], label="Treino Acurácia", color="#1f77b4", linewidth=1.8)
-        ax_a.plot(epochs, hist["val_acc"], label="Validação Acurácia", color="#ff7f0e", linewidth=1.8, linestyle="--")
-        ax_a.axvline(best_ep, color="green", linestyle=":", linewidth=1.4, label=f"Melhor Época ({best_ep})")
-        ax_a.set_title(f"{e['exp_label']} — Acurácia", fontsize=10, fontweight="bold")
-        ax_a.set_ylabel("Acurácia")
+        ax_a.plot(epochs, hist["train_acc"], label="Treino Acurácia", color="#1f77b4", linewidth=2.2)
+        ax_a.plot(epochs, hist["val_acc"], label="Validação Acurácia", color="#ff7f0e", linewidth=2.2, linestyle="--")
+        ax_a.axvline(best_ep, color="green", linestyle=":", linewidth=1.8, label=f"Melhor Época ({best_ep})")
+        ax_a.set_title(f"{e['exp_label']} — Acurácia", fontsize=12, fontweight="bold")
+        ax_a.set_ylabel("Acurácia", fontsize=11)
         ax_a.set_ylim(0, 1.0)
+        ax_a.tick_params(labelsize=10)
         ax_a.grid(True, linestyle="--", alpha=0.45)
-        ax_a.legend(fontsize=8, loc="lower right")
+        ax_a.legend(fontsize=9.5, loc="lower right")
         if idx == 5:
-            ax_a.set_xlabel("Época")
+            ax_a.set_xlabel("Época", fontsize=11)
 
-    fig.suptitle("Curvas de Aprendizagem (Perda e Acurácia por Época) — Seis Experimentos Obrigatórios", fontsize=13, fontweight="bold", y=0.995)
+    fig.suptitle("Curvas de Aprendizagem (Perda e Acurácia por Época) — Seis Experimentos Obrigatórios", fontsize=14.5, fontweight="bold", y=0.995)
     plt.tight_layout(rect=[0, 0, 1, 0.985])
-    fig.savefig(FIGURES_DIR / "fig4_curvas_aprendizagem_6exp.png", dpi=180)
+    fig.savefig(FIGURES_DIR / "fig4_curvas_aprendizagem_6exp.png", dpi=200)
     plt.close(fig)
     print("fig4_curvas_aprendizagem_6exp.png gerada.")
 
@@ -273,7 +276,7 @@ def plot_error_analysis(exp_data):
     plt.tight_layout(rect=[0, 0, 1, 0.96])
     fig.savefig(FIGURES_DIR / "fig7_analise_erros_melhor_modelo.png", dpi=180)
     plt.close(fig)
-    print(f"fig7_analise_erros_melhor_modelo.png gerada (total de erros no teste: {len(errors_df)}/380).")
+    print(f"fig7_analise_erros_melhor_modelo.png gerada (total de erros no teste: {len(errors_df)}/{len(preds_df)}).")
 
 
 def plot_yolo_bonus_figures(yolo_data):
