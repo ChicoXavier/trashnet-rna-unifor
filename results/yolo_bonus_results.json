@@ -19,83 +19,84 @@
   "model_file": "models/exp7_yolo11n_cls_bonus.pt",
   "model_size_kb": 3122.93,
   "model_size_mb": 3.05,
-  "total_train_time_sec": 2404.9,
-  "avg_epoch_time_sec": 120.245,
-  "peak_ram_mb": 474.45,
+  "total_train_time_sec": 2462.58,
+  "avg_epoch_time_sec": 123.129,
+  "inference_ms_per_image": 16.6993,
+  "peak_ram_mb": 454.36,
   "cpu": "Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz",
   "test_metrics": {
-    "accuracy": 0.9316,
-    "f1_macro": 0.9198,
-    "f1_weighted": 0.9316,
+    "accuracy": 0.9103,
+    "f1_macro": 0.8865,
+    "f1_weighted": 0.9113,
     "per_class": {
       "glass": {
-        "precision": 0.8902,
-        "recall": 0.9605,
-        "f1": 0.9241,
-        "support": 76
+        "precision": 0.9467,
+        "recall": 0.9467,
+        "f1": 0.9467,
+        "support": 75
       },
       "paper": {
-        "precision": 0.9551,
-        "recall": 0.9551,
-        "f1": 0.9551,
+        "precision": 0.9302,
+        "recall": 0.8989,
+        "f1": 0.9143,
         "support": 89
       },
       "cardboard": {
-        "precision": 0.9831,
-        "recall": 0.9667,
-        "f1": 0.9748,
-        "support": 60
+        "precision": 0.9828,
+        "recall": 0.9344,
+        "f1": 0.958,
+        "support": 61
       },
       "plastic": {
-        "precision": 0.9403,
-        "recall": 0.863,
-        "f1": 0.9,
-        "support": 73
+        "precision": 0.8889,
+        "recall": 0.8889,
+        "f1": 0.8889,
+        "support": 72
       },
       "metal": {
-        "precision": 0.9355,
+        "precision": 0.8923,
         "recall": 0.9355,
-        "f1": 0.9355,
+        "f1": 0.9134,
         "support": 62
       },
       "trash": {
-        "precision": 0.8095,
-        "recall": 0.85,
-        "f1": 0.8293,
+        "precision": 0.6522,
+        "recall": 0.75,
+        "f1": 0.6977,
         "support": 20
       }
     },
     "confusion_matrix_counts": [
       [
-        73,
+        71,
         0,
         0,
-        2,
-        1,
-        0
-      ],
-      [
-        0,
-        85,
-        1,
-        0,
-        2,
-        1
-      ],
-      [
-        1,
-        1,
-        58,
-        0,
+        4,
         0,
         0
       ],
       [
-        6,
-        1,
         0,
-        63,
+        80,
         1,
+        2,
+        1,
+        5
+      ],
+      [
+        0,
+        2,
+        57,
+        1,
+        1,
+        0
+      ],
+      [
+        2,
+        0,
+        0,
+        64,
+        4,
         2
       ],
       [
@@ -108,45 +109,45 @@
       ],
       [
         0,
-        2,
+        4,
+        0,
         0,
         1,
-        0,
-        17
+        15
       ]
     ],
     "confusion_matrix_row_pct": [
       [
-        96.05,
+        94.67,
         0.0,
         0.0,
-        2.63,
-        1.32,
+        5.33,
+        0.0,
         0.0
       ],
       [
         0.0,
-        95.51,
+        89.89,
         1.12,
-        0.0,
         2.25,
-        1.12
+        1.12,
+        5.62
       ],
       [
-        1.67,
-        1.67,
-        96.67,
         0.0,
-        0.0,
+        3.28,
+        93.44,
+        1.64,
+        1.64,
         0.0
       ],
       [
-        8.22,
-        1.37,
+        2.78,
         0.0,
-        86.3,
-        1.37,
-        2.74
+        0.0,
+        88.89,
+        5.56,
+        2.78
       ],
       [
         3.23,
@@ -158,11 +159,11 @@
       ],
       [
         0.0,
-        10.0,
+        20.0,
+        0.0,
         0.0,
         5.0,
-        0.0,
-        85.0
+        75.0
       ]
     ]
   },

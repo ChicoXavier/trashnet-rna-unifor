@@ -35,8 +35,9 @@ from sklearn.metrics import (
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
+from torchvision.transforms import functional as TF
 
-# Configurar 4 threads físicas (Intel Core i7-2600K - 4 núcleos físicos)
+# Configurar 4 threads físicas para processamento em CPU
 torch.set_num_threads(4)
 
 CLASSES = ["glass", "paper", "cardboard", "plastic", "metal", "trash"]
@@ -104,9 +105,10 @@ class TrashNetMemoryDataset(Dataset):
             # Espelhamento horizontal aleatório (p=0.5)
             if torch.rand(1).item() < 0.5:
                 img = torch.flip(img, dims=[2])
-            # Espelhamento vertical aleatório (p=0.25)
-            if torch.rand(1).item() < 0.25:
-                img = torch.flip(img, dims=[1])
+            # Pequena rotação aleatória entre -10 e +10 graus (p=0.5)
+            if torch.rand(1).item() < 0.5:
+                angle = (torch.rand(1).item() * 20.0) - 10.0
+                img = TF.rotate(img, angle=angle)
         return img, label
 
 
@@ -280,8 +282,8 @@ def run_single_experiment(
     width, height = resolution_wh
     x_train, y_train, x_val, y_val, x_test, y_test = data_cache[resolution_wh]
 
-    # Aumento de dados leve somente na CNN em treinamento (preservando protocolo entre CNNs)
-    augment_train = (arch_type == "CNN")
+    # Aumento de dados idêntico no treinamento de MLP e CNN (protocolo justo)
+    augment_train = True
     train_dataset = TrashNetMemoryDataset(x_train, y_train, augment=augment_train)
     val_dataset = TrashNetMemoryDataset(x_val, y_val, augment=False)
     test_dataset = TrashNetMemoryDataset(x_test, y_test, augment=False)
@@ -437,9 +439,12 @@ def run_single_experiment(
 
     # Avaliação final no conjunto de validação e de teste com o melhor modelo salvo
     val_loss_best, val_acc_best, val_f1_best, _, _, _ = evaluate_model(model, val_loader, val_criterion, device)
+    t_inf_start = time.perf_counter()
     test_loss, test_acc, test_f1, y_true_test, y_pred_test, y_prob_test = evaluate_model(
         model, test_loader, val_criterion, device
     )
+    t_inf_total = time.perf_counter() - t_inf_start
+    inference_ms_per_image = round((t_inf_total / max(1, len(y_true_test))) * 1000.0, 4)
     test_metrics = compute_detailed_test_metrics(y_true_test, y_pred_test)
 
     # Salvar histórico por época em CSV
@@ -484,6 +489,7 @@ def run_single_experiment(
         "best_epoch": best_epoch,
         "total_train_time_sec": round(total_train_time, 2),
         "avg_epoch_time_sec": round(avg_epoch_time, 3),
+        "inference_ms_per_image": inference_ms_per_image,
         "peak_ram_mb": round(peak_ram_mb, 2),
         "val_metrics": {
             "loss": round(val_loss_best, 4),
@@ -516,12 +522,12 @@ def main():
     data_cache[(128, 96)] = (x_tr_128, y_tr_128, x_va_128, y_va_128, x_te_128, y_te_128)
 
     experiments_config = [
-        ("exp1_mlp_128x96_sem_pesos", "Exp 1: MLP (128×96, Sem Pesos)", "MLP", (128, 96), False, 35, 8),
-        ("exp2_mlp_128x96_com_pesos", "Exp 2: MLP (128×96, Com Pesos)", "MLP", (128, 96), True, 35, 8),
-        ("exp3_cnn_128x96_sem_pesos", "Exp 3: CNN (128×96, Sem Pesos)", "CNN", (128, 96), False, 35, 8),
-        ("exp4_cnn_128x96_com_pesos", "Exp 4: CNN (128×96, Com Pesos)", "CNN", (128, 96), True, 35, 8),
-        ("exp5_cnn_256x192_sem_pesos", "Exp 5: CNN (256×192, Sem Pesos)", "CNN", (256, 192), False, 30, 7),
-        ("exp6_cnn_512x384_sem_pesos", "Exp 6: CNN (512×384, Sem Pesos)", "CNN", (512, 384), False, 22, 6),
+        ("exp1_mlp_128x96_sem_pesos", "Exp 1: MLP (128×96, Sem Pesos)", "MLP", (128, 96), False, 60, 10),
+        ("exp2_mlp_128x96_com_pesos", "Exp 2: MLP (128×96, Com Pesos)", "MLP", (128, 96), True, 60, 10),
+        ("exp3_cnn_128x96_sem_pesos", "Exp 3: CNN (128×96, Sem Pesos)", "CNN", (128, 96), False, 60, 10),
+        ("exp4_cnn_128x96_com_pesos", "Exp 4: CNN (128×96, Com Pesos)", "CNN", (128, 96), True, 60, 10),
+        ("exp5_cnn_256x192_sem_pesos", "Exp 5: CNN (256×192, Sem Pesos)", "CNN", (256, 192), False, 60, 10),
+        ("exp6_cnn_512x384_sem_pesos", "Exp 6: CNN (512×384, Sem Pesos)", "CNN", (512, 384), False, 60, 10),
     ]
 
     all_results = []

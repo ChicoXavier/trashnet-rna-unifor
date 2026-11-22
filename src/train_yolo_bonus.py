@@ -120,7 +120,10 @@ def main():
     df_test = pd.read_csv(SPLITS_DIR / "test_seed42.csv")
     test_paths = [str(DATA_DIR / p) for p in df_test["relative_path"]]
 
+    t_inf_start = time.perf_counter()
     pred_results = best_model.predict(test_paths, imgsz=imgsz, device="cpu", verbose=False)
+    t_inf_total = time.perf_counter() - t_inf_start
+    inference_ms_per_image = round((t_inf_total / max(1, len(test_paths))) * 1000.0, 4)
 
     y_true = df_test["class_idx"].to_numpy()
     y_pred = []
@@ -199,6 +202,7 @@ def main():
         "model_size_mb": model_size_mb,
         "total_train_time_sec": round(total_train_time, 2),
         "avg_epoch_time_sec": round(avg_epoch_time, 3),
+        "inference_ms_per_image": inference_ms_per_image,
         "peak_ram_mb": round(peak_ram_mb, 2),
         "cpu": cpu_name,
         "test_metrics": {

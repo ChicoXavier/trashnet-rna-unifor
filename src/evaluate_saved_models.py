@@ -37,7 +37,7 @@ def evaluate_pytorch_checkpoints():
         raise FileNotFoundError("Nenhum checkpoint exp1..exp6 encontrado em models/.")
 
     print("=" * 76)
-    print("AVALIAÇÃO REPRODUTÍVEL SEM NOVO TREINAMENTO (CONJUNTO DE TESTE: 380 IMAGENS)")
+    print(f"AVALIAÇÃO REPRODUTÍVEL SEM NOVO TREINAMENTO (CONJUNTO DE TESTE: {len(df_test)} IMAGENS)")
     print("=" * 76)
 
     for pt_path in pt_files:
