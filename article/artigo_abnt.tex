@@ -2,6 +2,7 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage[brazil]{babel}
 \usepackage{geometry}
 \geometry{a4paper, top=20mm, bottom=18mm, left=22mm, right=18mm}
@@ -11,13 +12,20 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{amsmath}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage[nobottomtitles*]{titlesec}
+\PassOptionsToPackage{hyphens}{url}
 \usepackage{hyperref}
 \usepackage{xcolor}
-\usepackage{float}
 \usepackage{indentfirst}
 
 \setlength{\parindent}{1.25cm}
 \setlength{\parskip}{3pt}
+\emergencystretch=3em
+\setlist[itemize]{itemsep=2pt, topsep=3pt, parsep=0pt}
+\def\UrlBreaks{\do\/\do-\do_}
+\renewcommand{\floatpagefraction}{0.75}
 
 \definecolor{PrimaryBlue}{HTML}{0B3C7D}
 
@@ -34,8 +42,8 @@
 % CABEÇALHO NA 1ª PÁGINA (SEM CAPA SEPARADA - CONFORME SEÇÃO 6 DA PROPOSTA)
 % ==============================================================================
 \begin{center}
-    {\footnotesize\bfseries\color{PrimaryBlue} UNIVERSIDADE DE FORTALEZA (UNIFOR) | EDUCAÇÃO A DISTÂNCIA (EAD) | REDES NEURAIS ARTIFICIAIS}\\[6pt]
-    {\large\bfseries CLASSIFICAÇÃO DE RESÍDUOS SÓLIDOS POR IMAGENS COM REDES NEURAIS ARTIFICIAIS: COMPARAÇÃO ENTRE MLP, CNN, PESOS DE CLASSE, RESOLUÇÃO E TRANSFERÊNCIA DE APRENDIZAGEM COM YOLO}\\[8pt]
+    {\footnotesize\bfseries\color{PrimaryBlue} Universidade de Fortaleza (UNIFOR), Educação a Distância (EAD), Redes Neurais Artificiais}\\[6pt]
+    {\large\bfseries Classificação de Resíduos Sólidos por Imagens com Redes Neurais Artificiais: Comparação entre MLP, CNN, Pesos de Classe, Resolução e Transferência de Aprendizagem com YOLO}\\[8pt]
     {\small
     \textbf{Equipe:} Caio Cesar da Silva Barros (Matrícula: [XXXXXXX]); Danillo Castro de Sousa (Matrícula: 2523562);\\
     Francisco Vitor Rodrigues Xavier (Matrícula: 2523561); Ian Fonseca Araujo (Matrícula: [XXXXXXX]);\\
@@ -70,19 +78,19 @@ Usamos o arquivo oficial \texttt{dataset-resized.zip} do \textit{TrashNet}, que 
 
 As fotos do \textit{TrashNet} foram tiradas em fundo claro uniforme e mostram um objeto por vez. Muitos objetos estão amassados, são transparentes (vidro e plástico) ou refletem luz (metal e vidro), o que dificulta separar as classes só pela cor. A Figura~\ref{fig:dist} mostra a divisão das classes após a limpeza, e a Figura~\ref{fig:exemplos} traz exemplos de cada categoria.
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \caption{Quantidade de imagens por classe no TrashNet limpo (2.521 imagens; 70\% treino, 15\% validação, 15\% teste).}
     \label{fig:dist}
-    \includegraphics[width=0.88\linewidth]{fig1_distribuicao_classes.png}\\
+    \includegraphics[width=0.88\linewidth, height=0.28\textheight, keepaspectratio]{fig1_distribuicao_classes.png}\\
     {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \caption{Exemplos de imagens das seis classes no conjunto de treino.}
     \label{fig:exemplos}
-    \includegraphics[width=0.95\linewidth]{fig2_exemplos_classes.png}\\
+    \includegraphics[width=0.95\linewidth, height=0.28\textheight, keepaspectratio]{fig2_exemplos_classes.png}\\
     {\footnotesize Fonte: Autores, com imagens de Yang e Thung (2016).}
 \end{figure}
 
@@ -90,11 +98,11 @@ As fotos do \textit{TrashNet} foram tiradas em fundo claro uniforme e mostram um
 
 Para manter os testes reprodutíveis e evitar vazamento de dados (\textit{data leakage}), fizemos uma divisão estratificada fixa com semente \texttt{42} nas 2.521 imagens. Ficamos com 1.764 imagens (70\%) para treino, 378 (15\%) para validação e 379 (15\%) para teste. A classe \textit{trash} manteve cerca de $5{,}43\%$ em todas as partes (96 no treino, 21 na validação e 20 no teste). Convertemos as imagens para RGB e redimensionamos de $512 \times 384$ para $128 \times 96$ e $256 \times 192$ por interpolação bilinear (Figura~\ref{fig:res}). Depois, dividimos os pixels por 255 para deixar os valores no intervalo $[0, 1]$. No treino, a média RGB foi $[0{,}6727;\; 0{,}6397;\; 0{,}6047]$ e o desvio padrão foi $[0{,}1837;\; 0{,}1828;\; 0{,}1934]$. Para comparar MLP e CNN de forma justa, aplicamos a mesma aumentação de dados leve só no treino: espelhamento horizontal ($p = 0{,}5$) e rotação aleatória de $\pm 10^\circ$ ($p = 0{,}5$).
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \caption{Amostra \texttt{metal107.jpg} nas três resoluções testadas ($\text{L} \times \text{A}$).}
     \label{fig:res}
-    \includegraphics[width=0.92\linewidth]{fig3_comparacao_resolucoes.png}\\
+    \includegraphics[width=0.92\linewidth, height=0.25\textheight, keepaspectratio]{fig3_comparacao_resolucoes.png}\\
     {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
@@ -118,12 +126,13 @@ Separamos \textit{arquitetura} (o caminho geral do sinal na rede) de \textit{top
 
 A Tabela~\ref{tab:geral} reúne as métricas de validação e teste, o tempo de treino, a RAM e a inferência dos seis experimentos obrigatórios e do bônus com YOLO11n-cls. A Tabela~\ref{tab:classe} mostra precisão (acertos entre as previsões da classe), \textit{recall} (taxa de itens reais encontrados), F1 e suporte nas 379 imagens de teste, usando \texttt{zero\_division=0} quando uma classe não recebe previsões.
 
-\begin{table}[H]
+\begin{table}[!htbp]
 \centering
 \scriptsize
 \caption{Desempenho comparativo, custo e inferência no TrashNet limpo (Seed = 42).}
 \label{tab:geral}
 \setlength{\tabcolsep}{2.5pt}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{lccccccccccc}
 \toprule
 \textbf{Experimento} & \textbf{Res.} & \textbf{Pesos} & \textbf{Parâm.} & \textbf{Tam.(MB)} & \textbf{Ép.} & \textbf{T.Tot(s)} & \textbf{T/Ép(s)} & \textbf{Inf.(ms)} & \textbf{RAM(MB)} & \textbf{Val F1} & \textbf{Teste Acc / F1} \\
@@ -136,16 +145,18 @@ Exp 5: CNN & 256$\times$192 & Não & 28.358 & 0,12 & 45/55 & 1.206,65 & 21,94 & 
 Exp 6: CNN & 512$\times$384 & Não & 28.358 & 0,12 & 23/33 & 3.088,45 & 93,59 & 18,07 & 6.439,6 & 0,6212 & 70,98\% / 0,6582 \\
 \textbf{Exp 7: YOLO11n-cls} & \textbf{224$\times$224} & \textbf{Pré-tr.} & \textbf{1.538.790} & \textbf{3,05} & \textbf{20/20} & \textbf{2.462,58} & \textbf{123,13} & \textbf{16,70} & \textbf{454,4} & \textbf{0,9233*} & \textbf{91,03\% / 0,8865} \\
 \bottomrule
-\end{tabular}\\
+\end{tabular}%
+}\\
 {\footnotesize Fonte: Autores (2026). *Para o YOLO11n-cls, mostramos a acurácia Top-1 de validação informada pelo Ultralytics.}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[!htbp]
 \centering
 \footnotesize
 \caption{Métricas por classe no conjunto de teste limpo (379 imagens; \texttt{zero\_division=0}).}
 \label{tab:classe}
 \setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{lcccccc}
 \toprule
 \textbf{Experimento} & \textbf{glass (75)} & \textbf{paper (89)} & \textbf{cardboard (61)} & \textbf{plastic (72)} & \textbf{metal (62)} & \textbf{trash (20)} \\
@@ -159,51 +170,52 @@ Exp 5: CNN (256$\times$192) & 0,61/0,80/0,69 & 0,80/0,84/0,82 & 0,93/0,89/0,91 &
 Exp 6: CNN (512$\times$384) & 0,60/0,79/0,68 & 0,67/0,91/0,77 & 0,87/0,87/0,87 & 0,70/0,60/0,65 & 0,88/0,45/0,60 & 0,83/0,25/0,38 \\
 \textbf{Exp 7: YOLO11n-cls} & \textbf{0,95/0,95/0,95} & \textbf{0,93/0,90/0,91} & \textbf{0,98/0,93/0,96} & \textbf{0,89/0,89/0,89} & \textbf{0,89/0,94/0,91} & \textbf{0,65/0,75/0,70} \\
 \bottomrule
-\end{tabular}\\
+\end{tabular}%
+}\\
 {\footnotesize Fonte: Autores (2026). Siglas: P = Precisão, R = Recall, F1 = F1-score.}
 \end{table}
 
 A Figura~\ref{fig:curvas} mostra as curvas de perda e acurácia por época dos seis experimentos obrigatórios. A Figura~\ref{fig:cm} traz as matrizes de confusão no conjunto de teste.
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \caption{Curvas de perda e acurácia (treino e validação) dos seis experimentos obrigatórios.}
     \label{fig:curvas}
-    \includegraphics[width=0.98\linewidth, height=0.72\textheight, keepaspectratio]{fig4_curvas_aprendizagem_6exp.png}\\
+    \includegraphics[width=0.95\linewidth, height=0.42\textheight, keepaspectratio]{fig4_curvas_aprendizagem_6exp.png}\\
     {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \caption{Matrizes de confusão no teste (contagens e porcentagens por linha).}
     \label{fig:cm}
-    \includegraphics[width=0.98\linewidth, height=0.68\textheight, keepaspectratio]{fig5_matrizes_confusao_6exp.png}\\
+    \includegraphics[width=0.95\linewidth, height=0.42\textheight, keepaspectratio]{fig5_matrizes_confusao_6exp.png}\\
     {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
 A Figura~\ref{fig:res_eff} mostra o efeito da resolução na CNN sem pesos (Experimentos 3, 5 e 6). A Figura~\ref{fig:erros} mostra os erros do modelo obrigatório de maior F1 macro na validação (\textbf{Exp 4: CNN $128 \times 96$ com pesos}, Val F1 Macro = 0,7277), com 102 erros e 277 acertos em 379 amostras. Já a Figura~\ref{fig:yolo} apresenta o resultado do \textbf{YOLO11n-cls} (91,03\% de acurácia, 345 acertos e 34 erros).
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \caption{Efeito da resolução na CNN sem pesos: (a) resultado no teste e (b) tempo de treino.}
     \label{fig:res_eff}
-    \includegraphics[width=0.95\linewidth]{fig6_efeito_resolucao_cnn.png}\\
+    \includegraphics[width=0.95\linewidth, height=0.28\textheight, keepaspectratio]{fig6_efeito_resolucao_cnn.png}\\
     {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \caption{Erros do melhor modelo obrigatório na validação (Exp 4: CNN $128 \times 96$ com pesos).}
     \label{fig:erros}
-    \includegraphics[width=0.90\linewidth]{fig7_analise_erros_melhor_modelo.png}\\
+    \includegraphics[width=0.90\linewidth, height=0.28\textheight, keepaspectratio]{fig7_analise_erros_melhor_modelo.png}\\
     {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
     \caption{Resultado do YOLO11n-cls ($224 \times 224$): perda, acurácia Top-1 e matriz de confusão no teste.}
     \label{fig:yolo}
-    \includegraphics[width=0.98\linewidth]{fig8_yolo_bonus_avaliacao.png}\\
+    \includegraphics[width=0.95\linewidth, height=0.28\textheight, keepaspectratio]{fig8_yolo_bonus_avaliacao.png}\\
     {\footnotesize Fonte: Autores (2026).}
 \end{figure}
 
