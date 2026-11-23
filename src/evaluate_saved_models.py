@@ -51,7 +51,8 @@ def evaluate_pytorch_checkpoints():
         loader = DataLoader(TrashNetMemoryDataset(x_test, y_test, augment=False), batch_size=32, shuffle=False)
 
         if arch_type == "MLP":
-            model = TrashNetMLP(height=h, width=w, num_classes=len(CLASSES)).to(device)
+            mlp_norm = bool(ckpt.get("mlp_normalize", False))
+            model = TrashNetMLP(height=h, width=w, num_classes=len(CLASSES), normalize=mlp_norm).to(device)
         else:
             model = TrashNetCNN(num_classes=len(CLASSES)).to(device)
 

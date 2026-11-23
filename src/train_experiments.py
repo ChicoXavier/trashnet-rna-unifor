@@ -17,6 +17,7 @@ import gc
 import time
 import json
 import random
+import argparse
 import platform
 import subprocess
 from pathlib import Path
@@ -42,6 +43,10 @@ torch.set_num_threads(4)
 
 CLASSES = ["glass", "paper", "cardboard", "plastic", "metal", "trash"]
 SEED = 42
+
+# Escolhidos na validação, ver results/mlp_tuning.csv
+MLP_LR = 1e-4
+MLP_NORMALIZE = True
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data" / "dataset-resized"
@@ -116,12 +121,27 @@ class TrashNetMLP(nn.Module):
     """
     Arquitetura MLP conforme Seção 3 da proposta e Percurso 2:
     - Entrada: pixels RGB organizados como vetor (altura * largura * 3 = 96 * 128 * 3 = 36.864)
+    - Opcionalmente normaliza a entrada por canal RGB com média e desvio do treino (buffers, sem alterar parâmetros)
     - Duas camadas ocultas totalmente conectadas (256 e 128 neurônios) com ativação ReLU e Dropout(0.2)
     - Camada de saída: 6 neurônios (1 para cada classe de resíduo)
     """
 
-    def __init__(self, height: int = 96, width: int = 128, num_classes: int = 6):
+    def __init__(
+        self,
+        height: int = 96,
+        width: int = 128,
+        num_classes: int = 6,
+        normalize: bool = False,
+        mean=None,
+        std=None,
+    ):
         super().__init__()
+        self.normalize = normalize
+        if self.normalize:
+            mean_vals = [0.6727, 0.6397, 0.6047] if mean is None else list(mean)
+            std_vals = [0.1837, 0.1828, 0.1934] if std is None else list(std)
+            self.register_buffer("mean", torch.tensor(mean_vals, dtype=torch.float32).view(1, 3, 1, 1))
+            self.register_buffer("std", torch.tensor(std_vals, dtype=torch.float32).view(1, 3, 1, 1))
         input_dim = height * width * 3
         self.network = nn.Sequential(
             nn.Flatten(),
@@ -135,6 +155,8 @@ class TrashNetMLP(nn.Module):
         )
 
     def forward(self, x):
+        if self.normalize:
+            x = (x - self.mean) / self.std
         return self.network(x)
 
 
@@ -268,6 +290,9 @@ def run_single_experiment(
     patience: int = 8,
     batch_size: int = 32,
     lr: float = 1e-3,
+    mlp_normalize: bool = False,
+    mlp_mean=None,
+    mlp_std=None,
 ):
     print(f"\n{'='*72}")
     print(f"Iniciando {exp_id}: {exp_label}")
@@ -296,7 +321,14 @@ def run_single_experiment(
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     if arch_type == "MLP":
-        model = TrashNetMLP(height=height, width=width, num_classes=len(CLASSES)).to(device)
+        model = TrashNetMLP(
+            height=height,
+            width=width,
+            num_classes=len(CLASSES),
+            normalize=mlp_normalize,
+            mean=mlp_mean,
+            std=mlp_std,
+        ).to(device)
     else:
         model = TrashNetCNN(num_classes=len(CLASSES)).to(device)
 
@@ -420,20 +452,21 @@ def run_single_experiment(
 
     # Salvar o modelo e medir tamanho em disco
     model_path = MODELS_DIR / f"{exp_id}.pt"
-    torch.save(
-        {
-            "exp_id": exp_id,
-            "arch_type": arch_type,
-            "resolution_wh": resolution_wh,
-            "use_class_weights": use_class_weights,
-            "seed": SEED,
-            "best_epoch": best_epoch,
-            "best_val_f1_macro": round(best_val_f1, 4),
-            "model_state_dict": best_state_dict,
-            "classes": CLASSES,
-        },
-        model_path,
-    )
+    ckpt_payload = {
+        "exp_id": exp_id,
+        "arch_type": arch_type,
+        "resolution_wh": resolution_wh,
+        "use_class_weights": use_class_weights,
+        "seed": SEED,
+        "best_epoch": best_epoch,
+        "best_val_f1_macro": round(best_val_f1, 4),
+        "model_state_dict": best_state_dict,
+        "classes": CLASSES,
+    }
+    if arch_type == "MLP":
+        ckpt_payload["mlp_normalize"] = mlp_normalize
+        ckpt_payload["learning_rate_initial"] = lr
+    torch.save(ckpt_payload, model_path)
     model_size_kb = round(model_path.stat().st_size / 1024.0, 2)
     model_size_mb = round(model_size_kb / 1024.0, 3)
 
@@ -467,7 +500,7 @@ def run_single_experiment(
         f"Teste F1 Macro = {test_metrics['f1_macro']:.4f} | Tempo Total = {total_train_time:.2f}s"
     )
 
-    return {
+    result_dict = {
         "exp_id": exp_id,
         "exp_label": exp_label,
         "model_type": arch_type,
@@ -499,9 +532,24 @@ def run_single_experiment(
         "test_metrics": test_metrics,
         "history": history,
     }
+    if arch_type == "MLP":
+        result_dict["mlp_normalize"] = mlp_normalize
+    return result_dict
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Treinamento controlado dos experimentos TrashNet.")
+    parser.add_argument(
+        "--only",
+        type=str,
+        default=None,
+        help="Lista separada por vírgula de exp_id para executar (mescla no JSON existente).",
+    )
+    args = parser.parse_args()
+    only_ids = None
+    if args.only:
+        only_ids = {s.strip() for s in args.only.split(",") if s.strip()}
+
     df_train = pd.read_csv(SPLITS_DIR / "train_seed42.csv")
     df_val = pd.read_csv(SPLITS_DIR / "val_seed42.csv")
     df_test = pd.read_csv(SPLITS_DIR / "test_seed42.csv")
@@ -509,17 +557,11 @@ def main():
     with open(RESULTS_DIR / "eda_summary.json", "r", encoding="utf-8") as f:
         eda_summary = json.load(f)
 
+    mean_rgb = eda_summary["train_rgb_mean_0_1"]
+    std_rgb = eda_summary["train_rgb_std_0_1"]
     weights_list = [eda_summary["class_weights_train"][c]["weight"] for c in CLASSES]
     class_weights_tensor = torch.tensor(weights_list, dtype=torch.float32)
     print("Pesos de classe (calculados somente no treino):", dict(zip(CLASSES, weights_list)))
-
-    # Pré-carregar imagens de 128x96 para os 4 primeiros experimentos
-    print("\nPré-carregando tensores em 128x96 (excluído da medição de tempo de treinamento)...")
-    data_cache = {}
-    x_tr_128, y_tr_128 = preload_split_tensors(df_train, 128, 96)
-    x_va_128, y_va_128 = preload_split_tensors(df_val, 128, 96)
-    x_te_128, y_te_128 = preload_split_tensors(df_test, 128, 96)
-    data_cache[(128, 96)] = (x_tr_128, y_tr_128, x_va_128, y_va_128, x_te_128, y_te_128)
 
     experiments_config = [
         ("exp1_mlp_128x96_sem_pesos", "Exp 1: MLP (128×96, Sem Pesos)", "MLP", (128, 96), False, 60, 10),
@@ -530,9 +572,61 @@ def main():
         ("exp6_cnn_512x384_sem_pesos", "Exp 6: CNN (512×384, Sem Pesos)", "CNN", (512, 384), False, 60, 10),
     ]
 
-    all_results = []
+    json_path = RESULTS_DIR / "experiments_results.json"
+    existing_by_id = {}
+    existing_hw = None
+    if only_ids is not None:
+        if not json_path.exists():
+            raise FileNotFoundError("--only exige results/experiments_results.json existente para mesclagem.")
+        with open(json_path, "r", encoding="utf-8") as f:
+            existing_payload = json.load(f)
+        existing_hw = existing_payload.get("hardware_info")
+        for item in existing_payload.get("experiments", []):
+            existing_by_id[item["exp_id"]] = item
+        valid_ids = {cfg[0] for cfg in experiments_config}
+        unknown = only_ids - valid_ids
+        if unknown:
+            raise ValueError(f"exp_id desconhecido em --only: {sorted(unknown)}")
+        print(f"Modo --only ativo: executando apenas {sorted(only_ids)} e preservando os demais experimentos.")
+
+    data_cache = {}
+    all_results_by_id = dict(existing_by_id) if only_ids is not None else {}
+
+    # Detectar CPU dinamicamente
+    cpu_name = platform.processor() or platform.machine()
+    if platform.system() == "Darwin":
+        try:
+            cpu_name = subprocess.check_output(["sysctl", "-n", "machdep.cpu.brand_string"], text=True).strip()
+        except Exception:
+            pass
+    current_os = f"{platform.system()} {platform.release()}"
+    current_hw = {
+        "cpu": cpu_name,
+        "gpu": "Ausente (treinamento executado em CPU; pico de RAM registrado via psutil)",
+        "ram_total_gb": round(psutil.virtual_memory().total / (1024.0 ** 3), 2),
+        "os": current_os,
+        "python_version": platform.python_version(),
+        "pytorch_version": torch.__version__,
+        "measurement_method": (
+            "Tempo cronometrado com time.perf_counter() cobrindo exclusivamente os loops de "
+            "treinamento e validação por época (excluindo download, leitura de disco e redimensionamento prévio). "
+            "Pico de RAM (RSS) monitorado via psutil.Process().memory_info().rss."
+        ),
+    }
+
+    if existing_hw is not None:
+        if existing_hw.get("cpu") == cpu_name and existing_hw.get("os") == current_os:
+            final_hw = existing_hw
+        else:
+            print(f"[AVISO] Hardware diferente do JSON anterior: {cpu_name} / {current_os}")
+            final_hw = existing_hw
+    else:
+        final_hw = current_hw
 
     for exp_id, exp_label, arch_type, res_wh, use_weights, max_ep, pat in experiments_config:
+        if only_ids is not None and exp_id not in only_ids:
+            continue
+
         if res_wh not in data_cache:
             # Liberar resoluções anteriores para medição limpa de RAM
             data_cache.clear()
@@ -543,6 +637,9 @@ def main():
             x_va, y_va = preload_split_tensors(df_val, w, h)
             x_te, y_te = preload_split_tensors(df_test, w, h)
             data_cache[res_wh] = (x_tr, y_tr, x_va, y_va, x_te, y_te)
+
+        lr_used = MLP_LR if arch_type == "MLP" else 1e-3
+        norm_used = MLP_NORMALIZE if arch_type == "MLP" else False
 
         res = run_single_experiment(
             exp_id=exp_id,
@@ -555,36 +652,25 @@ def main():
             max_epochs=max_ep,
             patience=pat,
             batch_size=32,
-            lr=1e-3,
+            lr=lr_used,
+            mlp_normalize=norm_used,
+            mlp_mean=mean_rgb,
+            mlp_std=std_rgb,
         )
-        all_results.append(res)
+        all_results_by_id[exp_id] = res
 
-        # Detectar CPU dinamicamente
-        cpu_name = platform.processor() or platform.machine()
-        if platform.system() == "Darwin":
-            try:
-                cpu_name = subprocess.check_output(["sysctl", "-n", "machdep.cpu.brand_string"], text=True).strip()
-            except Exception:
-                pass
+        ordered_results = [
+            all_results_by_id[cfg[0]]
+            for cfg in experiments_config
+            if cfg[0] in all_results_by_id
+        ]
 
         # Salvar checkpoint incremental de resultados
         summary_payload = {
-            "hardware_info": {
-                "cpu": cpu_name,
-                "gpu": "Ausente (treinamento executado em CPU; pico de RAM registrado via psutil)",
-                "ram_total_gb": round(psutil.virtual_memory().total / (1024.0 ** 3), 2),
-                "os": f"{platform.system()} {platform.release()}",
-                "python_version": platform.python_version(),
-                "pytorch_version": torch.__version__,
-                "measurement_method": (
-                    "Tempo cronometrado com time.perf_counter() cobrindo exclusivamente os loops de "
-                    "treinamento e validação por época (excluindo download, leitura de disco e redimensionamento prévio). "
-                    "Pico de RAM (RSS) monitorado via psutil.Process().memory_info().rss."
-                ),
-            },
-            "experiments": all_results,
+            "hardware_info": final_hw,
+            "experiments": ordered_results,
         }
-        with open(RESULTS_DIR / "experiments_results.json", "w", encoding="utf-8") as f:
+        with open(json_path, "w", encoding="utf-8") as f:
             json.dump(summary_payload, f, indent=2, ensure_ascii=False)
 
     print("\nTodos os 6 experimentos obrigatórios foram concluídos e salvos em results/experiments_results.json!")

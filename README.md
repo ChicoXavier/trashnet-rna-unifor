@@ -123,10 +123,12 @@ python src/evaluate_saved_models.py
 
 | Experimento | Resolução (L×A) | Pesos de Classe | Parâmetros | Tempo Total (s) | Inferência (ms/img) | Teste Acc | Teste F1 Macro |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Exp 1: MLP | `128 × 96` | Não | `9.471.110` | `70,97` | `0,24` | `34,83%` | `0,2275` |
-| Exp 2: MLP | `128 × 96` | Sim | `9.471.110` | `64,91` | `0,23` | `25,86%` | `0,1100` |
+| Exp 1: MLP | `128 × 96` | Não | `9.471.110` | `187,80` | `0,26` | `61,48%` | `0,5977` |
+| Exp 2: MLP | `128 × 96` | Sim | `9.471.110` | `214,93` | `0,30` | `62,53%` | `0,6069` |
 | Exp 3: CNN | `128 × 96` | Não | `28.358` | `213,74` | `0,62` | **`74,67%`** | `0,7154` |
 | **Exp 4: CNN (Melhor Val)** | `128 × 96` | Sim | `28.358` | `200,80` | `0,82` | `73,09%` | `0,7036` |
 | Exp 5: CNN | `256 × 192` | Não | `28.358` | `1.206,65` | `3,74` | **`74,67%`** | **`0,7213`** |
 | Exp 6: CNN | `512 × 384` | Não | `28.358` | `3.088,45` | `18,07` | `70,98%` | `0,6582` |
 | **Exp 7 (Bônus): YOLO11n-cls** | `224 × 224` | Pré-treinado | `1.538.790` | `2.462,58` | `16,70` | **`91,03%`** | **`0,8865`** |
+
+> **Ajuste da MLP (Exp 1 e Exp 2):** Usamos `lr = 1e-4` e normalização da entrada por canal RGB com média e desvio calculados só no treino, escolhidos pelo F1 macro de validação em 6 configurações ([`src/tune_mlp.py`](src/tune_mlp.py), resultados em [`results/mlp_tuning.csv`](results/mlp_tuning.csv)).
